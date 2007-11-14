@@ -168,11 +168,12 @@ class Compozer:
         if (options.download and
             not options.fetch_site_packages and
             len(args) == 0):
-            msg = StringIO.StringIO('Either specify requirements, or else'
+            msg = StringIO.StringIO()
+            msg.write('Either specify requirements, or else'
                                     '--fetch-site-packages '
                                     'or --no-download.\n\n')
-            parser.print_help(msg)
-            raise ValueError(msg)
+            msg.write(parser.format_help())
+            raise ValueError(msg.getvalue())
 
         if len(options.index_urls) == 0:
             options.index_urls = ['http://pypi.python.org/simple']
@@ -186,9 +187,10 @@ class Compozer:
             os.makedirs(path)
 
         if not os.path.isdir(path):
-            msg = StringIO.StringIO('Not a directory: %s\n\n' % path)
-            parser.print_help(msg)
-            raise ValueError(msg)
+            msg = StringIO.StringIO()
+            msg.write('Not a directory: %s\n\n' % path)
+            msg.write(parser.format_help())
+            raise ValueError(msg.getvalue())
 
         self.path = path
 
@@ -375,7 +377,7 @@ def main():
     try:
         compozer = Compozer(sys.argv[1:])
     except ValueError, e:
-        print e.message
+        print str(e)
         sys.exit(1)
     compozer()
 
