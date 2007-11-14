@@ -9,8 +9,56 @@ import shutil
 import sys
 import tarfile
 import tempfile
+import zipfile
 
 from setuptools.package_index import PackageIndex
+
+class TarArchive:
+    def __init__(self, filename):
+        self.filename = filename
+        self.tar = tarfile.open(filename, 'r')
+
+    def names(self):
+        return self.tar.getnames()
+        
+    def lines(self, name):
+        return [ x.rstrip() for x in self.tar.extractfile(name).readlines() ]
+
+    def extract(self, name, tempdir):
+        return self.tar.extract(name, tempdir)
+
+    def close(self):
+        self.tar.close()
+
+class ZipArchive:
+    closed = False
+    def __init__(self, filename):
+        self.filename = filename
+        self.zipf = zipfile.ZipFile(filename, 'r')
+
+    def names(self):
+        if self.closed:
+            raise IOError('closed')
+        return self.zipf.namelist()
+        
+    def lines(self, name):
+        if self.closed:
+            raise IOError('closed')
+        return self.zipf.read(name).split('\n')
+
+    def extract(self, name, tempdir):
+        if self.closed:
+            raise IOError('closed')
+        data = self.zipf.read(name)
+        thedir = os.path.split(name)[0]
+        os.makedirs(os.path.join(tempdir, thedir))
+        fn = os.path.join(tempdir, name)
+        f = open(fn, 'wb')
+        f.write(data)
+            
+    def close(self):
+        self.zipf.close()
+        self.closed = True
 
 class Compozer:
 
@@ -251,18 +299,24 @@ class Compozer:
         self.requirements = list(pkg_resources.parse_requirements(args))
 
     def _extractNameVersion(self, filename):
-
         self._blather('Parsing: %s' % filename)
-        tgz = tarfile.TarFile.gzopen(filename, 'r')
+
+        if ( filename.endswith('.tar.gz') or filename.endswith('.tgz')
+             or filename.endswith('.tar.bz2') ):
+            archive = TarArchive(filename)
+
+        elif filename.endswith('.egg') or filename.endswith('.zip'):
+            archive = ZipArchive(filename)
+
         try:
-            names = tgz.getnames()
+            names = archive.names()
             for name in names:
 
                 if name.endswith('PKG-INFO'):
 
                     project, version = None, None
 
-                    for line in tgz.extractfile(name).readlines():
+                    for line in archive.lines(name):
                         key, value = line.split(':', 1)
 
                         if key == 'Name':
@@ -276,7 +330,7 @@ class Compozer:
                                 return project, version
 
                 elif name == 'setup.py':
-                    tgz.extract(name, self.tmpdir)
+                    archive.extract(name, self.tmpdir)
 
             # no PKG-INFO found, do it the hard way.
             command = ('cd %s/%s && %s setup.py --name --version'
@@ -288,7 +342,7 @@ class Compozer:
             output = popen.communicate()[0]
             return output.splitlines()[:2]
         finally:
-            tgz.close()
+            archive.close()
 
 def main():
     compozer = Compozer(sys.argv[1:])
