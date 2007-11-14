@@ -1,0 +1,3 @@
+[console_scripts]
+makeindex = compoze.makeindex:main
+

@@ -1,0 +1,25 @@
+repoze.project Changelog
+
+  repoze-project 0.0.4 (2007-10-24)
+
+    - Depend on virtualenv >= 0.9.1 (so people who use Mac framework
+      builds and already have an earlier non-working one installed are
+      warned).
+
+  repoze-project 0.0.3 (2007-10-22)
+
+    - Change entry point group to 'repoze.project', use 'initialize'
+      entry point name to find entry point.
+
+    - More carefully specify requirement name for repoze.project
+      so we always require the version in use by the parent Python.
+
+    - Change '--target-path' option to '--path' for easier remembering.
+
+  repoze-project 0.0.2 (2007-10-20)
+
+    - Use entry points to initialize environment after installing eggs.
+
+  repoze-project 0.0.1 (2007-10-19)
+
+    - Initial pre-alpha release.
