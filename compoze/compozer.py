@@ -37,7 +37,7 @@ class Compozer:
             '-u', '--index-url',
             action='append',
             dest='index_urls',
-            default=['http://pypi.python.org/simple'],
+            default=[],
             help="Add a candidate index used to find distributions")
 
         parser.add_option(
@@ -107,6 +107,9 @@ class Compozer:
             len(args) == 0):
             parser.print_help(sys.stderr)
             sys.exit(1)
+
+        if len(options.index_urls) == 0:
+            options.index_urls = ['http://pypi.python.org/simple']
 
         self.options = options
         self._expandRequirements(args)
