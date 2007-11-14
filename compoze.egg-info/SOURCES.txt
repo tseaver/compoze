@@ -1,9 +1,0 @@
-README.txt
-setup.py
-compoze.egg-info/PKG-INFO
-compoze.egg-info/SOURCES.txt
-compoze.egg-info/dependency_links.txt
-compoze.egg-info/entry_points.txt
-compoze.egg-info/not-zip-safe
-compoze.egg-info/requires.txt
-compoze.egg-info/top_level.txt
