@@ -54,7 +54,7 @@ setup(name='compoze',
       test_suite="compoze.tests",
       entry_points = {
         'console_scripts': [
-         'makeindex = compoze.makeindex:main',
+         'compoze = compoze.compozer:main',
          ],
       },
       )

@@ -1,71 +1,65 @@
-repoze.project README
+compoze README
 
   Overview
 
-    This package provides a convenient mechanism for creating standalone
-    instances of repoze applications.
+    This package provides a script for creating setuptools-compatible
+    package indexes using packages downloaded from other indexes.
 
-  Usage
+  Installation
 
-    Installing 'repoze.project' via 'easy_install' (it doesn't
+    Installing 'compoze' via 'easy_install' (it doesn't
     depend on any other 'repoze' packages), creates a script,
-    'repozeproject', in the scripts directory of your Python.
+    'compoze', in the scripts directory of your Python::
 
-    Run this script to create a separate environment, with the
-    given 'repoze' application (and its dependencies) installed.
-    For instance, to install 'repoze.plone' into a new '/tmp/plone'
-    directory:
+      $ bin/easy_install -i http://dist.repoze.org/simple compoze
 
-      $ bin/easy_install -i http://dist.repoze.org/simple repoze.project
-      $ bin/repozeproject --path=/tmp/plone repoze.plone
+  Simple Usage
 
-    You can also ask to have extra eggs installed.
+    Run this script, passing a series of distutils requirment
+    specifications, e.g::
 
-      $ bin/repozeproject --path=/tmp/plone \
-        repoze.plone some.package anotherpackage
+      $ bin/compoze --path=/tmp/index \
+                    --index-url=http://dist.repoze.org/simple \
+                    compoze
 
-    By default, those eggs will be installed from the 'repoze'
-    package index;  if you want to use the Cheeseshop, prefix the
-    package name with 'pypi:', e.g.::
+    If you do not supply an index URL, 'compoze' uses the Python
+    Package Index (the "cheeseshop") by default::
 
-      $ bin/repozeproject --path=/tmp/plone repoze.plone pypi:cheesy
+      $ bin/compoze --path=/tmp/index someproject
+
+  Using Multiple Source Indexes
+
+    You can supply more than one "source" index::
+
+      $ bin/compoze --path=/tmp/index \
+                    --index-url=http://example.com/index \
+                    --index-url=http://another.example.com/index \
+                    someproject another_project
+
+  Recreating the Package Set Already Installed
+
+    You can also ask to have 'compoze' fetch distributions for the eggs
+    already installed in site-packges::
+
+      $ bin/compoze --path=/tmp/plone --fetch-site-packages
+
+  Building the Index In Place
 
     If left unspecified, the target path will be the current directory.
     E.g.::
 
-      $ mkdir /tmp/plone2
-      $ cd /tmp/plone2
-      $ /path/to/environment/bin/repozeproject repoze.plone
+      $ mkdir /tmp/myindex
+      $ cd /tmp/myindex
+      $ /path/to/environment/bin/compoze --fetch-site-packages
 
-  Theory of Operation
+  Splitting Downloads from Index Creation
 
-    'repozeproject' works as follows:
+    By default, 'compoze' first downloads the specified distribution(s),
+    and then makes a new package index.  You can turn either of these steps
+    off, e.g. to download distributions without making the index::
 
-     - It uses the 'virtualenv' package to create a new "virtual"
-       Python environment in the target directory, with an empty
-       'site-packages' directory.
+      $ bin/compoze --no-make-index --path=/tmp/downloads someproject
 
-     - It then installs the eggs specified by the remaining arguments
-       into the 'site-packages' of that environment, linking them into
-       the 'easyinstall.pth' file there, so that they are on the
-       'PYTHONPATH'.
+    or to make an index in an existing directory full of distributions::
 
-     - Finally, it introspects the egg corresponding to the
-       first-named argument ('repoze.plone' in the example above)
-       for an entry point of type 'repoze.initproject'.  If found,
-       it runs that entry point, which can then create additional
-       files or directories in the environment.
-
-       In the case of a Zope2-based project, this might include:
-
-       o Creating empty 'etc', 'var', and 'log' directories.
-
-       o Generating config files ('etc/zope.conf', 'etc/site.zcml',
-         'etc/paste.ini') using skeleton templates from the egg.
-
-       o Creating additional convenience scripts not alreay generated
-         during package installation.
-
-       This last step is enabled by default;  to disable it, pass
-       '--no-initialize-environment' on the command line to
-       'repozeproject'.
+      $ bin/compoze --no-download --path=/tmp/downloads

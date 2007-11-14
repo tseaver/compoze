@@ -1,4 +1,4 @@
-""" makeindex -- build a new Python package index from source distributions
+""" compoze -- build a new Python package index from source distributions
 
 """
 import getopt
@@ -97,7 +97,7 @@ class Compozer:
             '-k', '--keep-tempdir',
             action='store_true',
             dest='keep_tempdir',
-            default=True,
+            default=False,
             help="Keep temporary directory")
 
         options, args = parser.parse_args(argv)
