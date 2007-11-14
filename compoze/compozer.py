@@ -6,10 +6,12 @@ import optparse
 import os
 import pkg_resources
 import shutil
+import subprocess
 import sys
 import tarfile
 import tempfile
 import zipfile
+import StringIO
 
 from setuptools.package_index import PackageIndex
 
@@ -166,8 +168,11 @@ class Compozer:
         if (options.download and
             not options.fetch_site_packages and
             len(args) == 0):
-            parser.print_help(sys.stderr)
-            sys.exit(1)
+            msg = StringIO.StringIO('Either specify requirements, or else'
+                                    '--fetch-site-packages '
+                                    'or --no-download.\n\n')
+            parser.print_help(msg)
+            raise ValueError(msg)
 
         if len(options.index_urls) == 0:
             options.index_urls = ['http://pypi.python.org/simple']
@@ -181,8 +186,9 @@ class Compozer:
             os.makedirs(path)
 
         if not os.path.isdir(path):
-            print >> sys.stderr, 'Not a directory: %s' % path
-            sys.exit(1)
+            msg = StringIO.StringIO('Not a directory: %s\n\n' % path)
+            parser.print_help(msg)
+            raise ValueError(msg)
 
         self.path = path
 
@@ -323,6 +329,7 @@ class Compozer:
 
         try:
             names = archive.names()
+            has_setup = False
             for name in names:
 
                 if name.endswith('PKG-INFO'):
@@ -341,24 +348,35 @@ class Compozer:
                             version = value.strip()
                             if project is not None:
                                 return project, version
-
-                elif name == 'setup.py':
-                    archive.extract(name, self.tmpdir)
+                elif name.endswith('/setup.py'):
+                    has_setup = True
 
             # no PKG-INFO found, do it the hard way.
-            command = ('cd %s/%s && %s setup.py --name --version'
-                                    % (self.tmpdir, names[0], sys.executable))
-            popen = subprocess.Popen(command,
-                                     stdout=subprocess.PIPE,
-                                     shell=True,
-                                    )
-            output = popen.communicate()[0]
-            return output.splitlines()[:2]
+            if has_setup:
+                tmpdir = tempfile.mkdtemp()
+                try:
+                    for name in names:
+                        archive.extract(name, tmpdir)
+                    command = ('cd %s/%s && %s setup.py --name --version'
+                                % (tmpdir, names[0], sys.executable))
+                    popen = subprocess.Popen(command,
+                                             stdout=subprocess.PIPE,
+                                             shell=True,
+                                            )
+                    output = popen.communicate()[0]
+                    return tuple(output.splitlines()[:2])
+                finally:
+                    shutil.rmtree(tmpdir)
+            return None, None
         finally:
             archive.close()
 
 def main():
-    compozer = Compozer(sys.argv[1:])
+    try:
+        compozer = Compozer(sys.argv[1:])
+    except ValueError, e:
+        print e.message
+        sys.exit(1)
     compozer()
 
 if __name__ == '__main__':

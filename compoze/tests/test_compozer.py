@@ -1,5 +1,6 @@
 import unittest
 import os
+import tempfile
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -124,3 +125,88 @@ class Test__getArchiver(unittest.TestCase):
         from compoze.compozer import ZipArchive
         fname = self._getFilename('folder.egg')
         self.failUnless(isinstance(_getArchiver(fname), ZipArchive))
+
+
+class CompozerTests(unittest.TestCase):
+
+    def _getTargetClass(self):
+        from compoze.compozer import Compozer
+        return Compozer
+
+    def _makeOne(self, *args, **kw):
+        return self._getTargetClass()(*args, **kw)
+
+    def test_ctor_empty_argv_raises(self):
+        self.assertRaises(ValueError, self._makeOne, argv=[])
+
+    def test_ctor_no_download_invalid_path_raises(self):
+        self.assertRaises(ValueError, self._makeOne,
+                          argv=['--no-download', '--path=%s' % __file__])
+
+    def test_ctor_default_index_url_cheeseshop(self):
+        tested = self._makeOne(argv=['--fetch-site-packages'])
+        self.assertEqual(tested.options.index_urls,
+                         ['http://pypi.python.org/simple'])
+
+    def test__extractNameVersion_non_archive(self):
+        non_archive = tempfile.NamedTemporaryFile()
+        non_archive.write('This is a test.\n')
+        non_archive.flush()
+        tested = self._makeOne(argv=['--no-download'])
+        self.assertEqual(tested._extractNameVersion(non_archive.name),
+                         (None, None))
+
+    def test__extractNameVersion_archive_no_egg_info_or_setup(self):
+        import tarfile
+        tested = self._makeOne(argv=['--no-download', '--quiet'])
+        tfile = tempfile.NamedTemporaryFile(suffix='.tgz')
+        archive = tarfile.TarFile(fileobj=tfile)
+        archive.close()
+        tfile.flush()
+        self.assertEqual(tested._extractNameVersion(tfile.name),
+                         (None, None))
+
+    def test__extractNameVersion_archive_w_pkg_info(self):
+        import tarfile
+        import StringIO
+        tested = self._makeOne(argv=['--no-download', '--quiet'])
+        tfile = tempfile.NamedTemporaryFile(suffix='.tgz')
+        archive = tarfile.TarFile(fileobj=tfile, mode='w')
+        buffer = StringIO.StringIO()
+        buffer.writelines(['Name: testpackage\n', 'Version: 3.14\n'])
+        size = buffer.tell()
+        buffer.seek(0)
+        info = tarfile.TarInfo('PKG-INFO')
+        info.size = size
+        archive.addfile(info, buffer)
+        archive.close()
+        tfile.flush()
+        self.assertEqual(tested._extractNameVersion(tfile.name),
+                         ('testpackage', '3.14'))
+
+    def test__extractNameVersion_archive_w_setup(self):
+        import tarfile
+        import StringIO
+        tested = self._makeOne(argv=['--no-download', '--quiet'])
+        tfile = tempfile.NamedTemporaryFile(suffix='.tgz')
+        archive = tarfile.TarFile(fileobj=tfile, mode='w')
+        dinfo = tarfile.TarInfo('testpackage')
+        dinfo.type = tarfile.DIRTYPE
+        dinfo.mode = 0777
+        archive.addfile(dinfo)
+        buffer = StringIO.StringIO()
+        buffer.write(_DUMMY_SETUP)
+        size = buffer.tell()
+        buffer.seek(0)
+        finfo = tarfile.TarInfo('testpackage/setup.py')
+        finfo.size = size
+        archive.addfile(finfo, buffer)
+        archive.close()
+        tfile.flush()
+        self.assertEqual(tested._extractNameVersion(tfile.name),
+                         ('testpackage', '3.14'))
+
+_DUMMY_SETUP = """\
+print 'testpackage'
+print '3.14'
+"""
