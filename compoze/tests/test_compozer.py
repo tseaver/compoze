@@ -88,3 +88,39 @@ class TarBz2ArchiveTests(ArchiveTests, unittest.TestCase):
         for data in self.fixturefiles:
             archive.add(data['path'], data['name'])
         archive.close()
+
+class Test__getArchiver(unittest.TestCase):
+
+    def _getFilename(self, base):
+        return os.path.join(os.path.dirname(__file__),
+                            'fixtures', 'archive', base)
+
+    def test_tar_gz(self):
+        from compoze.compozer import _getArchiver
+        from compoze.compozer import TarArchive
+        fname = self._getFilename('folder.tar.gz')
+        self.failUnless(isinstance(_getArchiver(fname), TarArchive))
+
+    def test_tgz(self):
+        from compoze.compozer import _getArchiver
+        from compoze.compozer import TarArchive
+        fname = self._getFilename('folder.tgz')
+        self.failUnless(isinstance(_getArchiver(fname), TarArchive))
+
+    def test_bz2(self):
+        from compoze.compozer import _getArchiver
+        from compoze.compozer import TarArchive
+        fname = self._getFilename('folder.bz2')
+        self.failUnless(isinstance(_getArchiver(fname), TarArchive))
+
+    def test_zip(self):
+        from compoze.compozer import _getArchiver
+        from compoze.compozer import ZipArchive
+        fname = self._getFilename('folder.zip')
+        self.failUnless(isinstance(_getArchiver(fname), ZipArchive))
+
+    def test_egg(self):
+        from compoze.compozer import _getArchiver
+        from compoze.compozer import ZipArchive
+        fname = self._getFilename('folder.egg')
+        self.failUnless(isinstance(_getArchiver(fname), ZipArchive))

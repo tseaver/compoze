@@ -60,6 +60,19 @@ class ZipArchive:
         self.zipf.close()
         self.closed = True
 
+
+_ARCHIVERS = [('.tar.gz', TarArchive),
+              ('.tgz', TarArchive),
+              ('.bz2', TarArchive),
+              ('.zip', ZipArchive),
+              ('.egg', ZipArchive),
+             ]
+
+def _getArchiver(filename):
+    for suffix, archiver in _ARCHIVERS:
+        if filename.endswith(suffix):
+            return archiver(filename)
+
 class Compozer:
 
     def __init__(self, argv=None):
@@ -241,7 +254,8 @@ class Compozer:
             if not os.path.isfile(cname):
                 continue
             project, revision = self._extractNameVersion(cname)
-            projects.setdefault(project, []).append((revision, candidate))
+            if project is not None:
+                projects.setdefault(project, []).append((revision, candidate))
 
         items = projects.items()
         items.sort()
@@ -299,14 +313,13 @@ class Compozer:
         self.requirements = list(pkg_resources.parse_requirements(args))
 
     def _extractNameVersion(self, filename):
+        # -> (project, version)
         self._blather('Parsing: %s' % filename)
 
-        if ( filename.endswith('.tar.gz') or filename.endswith('.tgz')
-             or filename.endswith('.tar.bz2') ):
-            archive = TarArchive(filename)
-
-        elif filename.endswith('.egg') or filename.endswith('.zip'):
-            archive = ZipArchive(filename)
+        archive = _getArchiver(filename)
+        if archive is None:
+            self._blather('Unknown archive -- ignored')
+            return None, None
 
         try:
             names = archive.names()
