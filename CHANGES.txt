@@ -1,5 +1,11 @@
 compoze Changelog
 
-  compoze 0.1 (2007-11-13)
+  compoze 0.2 (2007-11-15)
 
-    - Initial pre-alpha release.
+    - Broke 'fetch' and 'index' out as subcommands;  other commands can
+      be registered using the pkg_resources entry point group,
+      'compoze_commands'.
+
+  compoze 0.1 (2007-11-14)
+
+    - Initial alpha release.

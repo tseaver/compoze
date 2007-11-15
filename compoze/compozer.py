@@ -1,147 +1,51 @@
 """ compoze -- build a new Python package index from source distributions
 
 """
-import getopt
 import optparse
 import os
 import pkg_resources
-import shutil
-import subprocess
 import sys
-import tarfile
-import tempfile
-import zipfile
-import StringIO
-
-from setuptools.package_index import PackageIndex
-
-class TarArchive:
-    def __init__(self, filename):
-        self.filename = filename
-        self.tar = tarfile.open(filename, 'r')
-
-    def names(self):
-        return self.tar.getnames()
-        
-    def lines(self, name):
-        return [ x.rstrip() for x in self.tar.extractfile(name).readlines() ]
-
-    def extract(self, name, tempdir):
-        return self.tar.extract(name, tempdir)
-
-    def close(self):
-        self.tar.close()
-
-class ZipArchive:
-    closed = False
-    def __init__(self, filename):
-        self.filename = filename
-        self.zipf = zipfile.ZipFile(filename, 'r')
-
-    def names(self):
-        if self.closed:
-            raise IOError('closed')
-        return self.zipf.namelist()
-        
-    def lines(self, name):
-        if self.closed:
-            raise IOError('closed')
-        return self.zipf.read(name).split('\n')
-
-    def extract(self, name, tempdir):
-        if self.closed:
-            raise IOError('closed')
-        data = self.zipf.read(name)
-        thedir = os.path.split(name)[0]
-        os.makedirs(os.path.join(tempdir, thedir))
-        fn = os.path.join(tempdir, name)
-        f = open(fn, 'wb')
-        f.write(data)
-            
-    def close(self):
-        self.zipf.close()
-        self.closed = True
 
 
-_ARCHIVERS = [('.tar.gz', TarArchive),
-              ('.tgz', TarArchive),
-              ('.bz2', TarArchive),
-              ('.zip', ZipArchive),
-              ('.egg', ZipArchive),
-             ]
+def _resolve(dotted_or_ep):
+    """ Resolve a dotted name or setuptools entry point to a callable.
+    """
+    return pkg_resources.EntryPoint.parse('x=%s' % dotted_or_ep).load(False)
 
-def _getArchiver(filename):
-    for suffix, archiver in _ARCHIVERS:
-        if filename.endswith(suffix):
-            return archiver(filename)
+_COMMANDS = {}
+
+for entry in pkg_resources.iter_entry_points('compoze_commands'):
+
+    klass = entry.load(False)
+
+    if entry.name in _COMMANDS:
+        raise ValueError('Clash on compoze command: %s' % entry.name)
+
+    _COMMANDS[entry.name] = klass
 
 class Compozer:
 
     def __init__(self, argv=None):
     
+        mine = []
+        queue = [(None, mine)]
+        self.commands = []
+
+        def _recordCommand(arg):
+            current, current_args = queue[-1]
+            if arg is not None:
+                queue.append((arg, []))
+
+        for arg in argv:
+            if arg in _COMMANDS:
+                _recordCommand(arg)
+            else:
+                queue[-1][1].append(arg)
+
+        _recordCommand(None)
+
         parser = optparse.OptionParser(
-            usage="%prog [OPTIONS] app_egg_name [other_egg_name]*")
-
-        parser.add_option(
-            '-p', '--path',
-            action='store',
-            dest='path',
-            default='.',
-            help="Specify the path in which to build the index")
-
-        parser.add_option(
-            '-n', '--index-name',
-            action='store',
-            dest='index_name',
-            default='simple',
-            help="Specify the name of the index subdirectory")
-
-        parser.add_option(
-            '-u', '--index-url',
-            action='append',
-            dest='index_urls',
-            default=[],
-            help="Add a candidate index used to find distributions")
-
-        parser.add_option(
-            '-f', '--fetch-site-packages',
-            action='store_true',
-            dest='fetch_site_packages',
-            default=False,
-            help="Fetch requirements used in site-packages")
-
-        parser.add_option(
-            '-d', '--download',
-            action='store_true',
-            dest='download',
-            default=True,
-            help="Download candidate distributions")
-
-        parser.add_option(
-            '-b', '--include-binary-eggs',
-            action='store_false',
-            dest='source_only',
-            default=True,
-            help="Include binary distributions")
-
-        parser.add_option(
-            '-D', '--no-download',
-            action='store_false',
-            dest='download',
-            help="Do not download candidate distributions")
-
-        parser.add_option(
-            '-m', '--make-index',
-            action='store_true',
-            dest='make_index',
-            default=True,
-            help="Make a package index in target directory")
-
-        parser.add_option(
-            '-M', '--no-make-index',
-            action='store_false',
-            dest='make_index',
-            help="Do not make a package index in target directory")
+            usage="%prog [GLOBAL_OPTOINS] [command [COMMAND_OPTIONS]* [COMMAND_ARGS]]")
 
         parser.add_option(
             '-q', '--quiet',
@@ -156,222 +60,27 @@ class Compozer:
             default=True,
             help="Show progress")
 
-        parser.add_option(
-            '-k', '--keep-tempdir',
-            action='store_true',
-            dest='keep_tempdir',
-            default=False,
-            help="Keep temporary directory")
-
-        options, args = parser.parse_args(argv)
-
-        if (options.download and
-            not options.fetch_site_packages and
-            len(args) == 0):
-            msg = StringIO.StringIO()
-            msg.write('Either specify requirements, or else'
-                                    '--fetch-site-packages '
-                                    'or --no-download.\n\n')
-            msg.write(parser.format_help())
-            raise ValueError(msg.getvalue())
-
-        if len(options.index_urls) == 0:
-            options.index_urls = ['http://pypi.python.org/simple']
+        options, args = parser.parse_args(mine)
 
         self.options = options
-        self._expandRequirements(args)
 
-        path = os.path.abspath(os.path.expanduser(options.path))
+        for command_name, args in queue:
+            if command_name is not None:
+                command = _COMMANDS[command_name](self.options, *args)
+                self.commands.append(command)
 
-        if not os.path.exists(path):
-            os.makedirs(path)
-
-        if not os.path.isdir(path):
-            msg = StringIO.StringIO()
-            msg.write('Not a directory: %s\n\n' % path)
-            msg.write(parser.format_help())
-            raise ValueError(msg.getvalue())
-
-        self.path = path
+        if not self.commands:
+            raise ValueError('No commands specified')
 
     def __call__(self):
 
-        self.tmpdir = tempfile.mkdtemp(dir='.')
-        try:
-            if self.options.download:
-                self.download_distributions()
+        for command in self.commands:
+            command()
 
-            if self.options.make_index:
-                self.make_index()
-        finally:
-            if not self.options.keep_tempdir:
-                shutil.rmtree(self.tmpdir)
-
-    def download_distributions(self):
-
-        # First, collect best sdist candidate for the requirment from each 
-        # index into a self.tmpdir
-        # XXX ignore same-name problem for now
-
-        for index_url in self.options.index_urls:
-            self._blather('=' * 50)
-            self._blather('Package index: %s' % index_url)
-            self._blather('=' * 50)
-            index = PackageIndex(index_url=index_url)
-
-            source_only = self.options.source_only
-            for rqmt in self.requirements:
-                self._blather('Fetching: %s' % rqmt)
-                dist = index.fetch_distribution(rqmt, self.tmpdir,
-                                                source=source_only)
-                self._blather('Found: %s' % dist)
-
-        self._blather('=' * 50)
-        self._blather('Merging indexes')
-        self._blather('=' * 50)
-
-        local_index = os.path.join(self.tmpdir)
-        local = PackageIndex(index_url=local_index ,
-                             search_path=(), # ignore installed!
-                            )
-
-        for rqmt in self.requirements:
-            self._blather('Resolving: %s' % rqmt)
-            dist = local.fetch_distribution(rqmt, '.', force_scan=True)
-            if dist is not None:
-                self._blather('Found: %s' % dist)
-                shutil.copy(dist.location, self.path)
-            else:
-                print 'Not found: %s' % rqmt
-
-    def make_index(self, path=None):
-
-        if path is None:
-            path = self.path
-
-        index_dir = os.path.join(path, self.options.index_name)
-        self._blather('=' * 50)
-        self._blather('Building index: %s' % index_dir)
-        self._blather('=' * 50)
-
-        projects = {}
-
-        candidates = os.listdir(path)
-        for candidate in candidates:
-            cname = os.path.join(path, candidate)
-            if not os.path.isfile(cname):
-                continue
-            project, revision = self._extractNameVersion(cname)
-            if project is not None:
-                projects.setdefault(project, []).append((revision, candidate))
-
-        items = projects.items()
-        items.sort()
-
-        if os.path.exists(index_dir):
-            print >> sys.stderr, 'Index directory exists: %s' % index_dir
-            sys.exit(1)
-
-        os.makedirs(index_dir)
-        index_html = os.path.join(index_dir, 'index.html')
-        top = open(index_html, 'w')
-        top.writelines(['<html>\n',
-                        '<body>\n',
-                        '<h1>Package Index</h1>\n',
-                        '<ul>\n'])
-
-        for key, value in items:
-            self._blather('Project: %s' % key)
-            dirname = os.path.join(index_dir, key)
-            os.makedirs(dirname)
-            top.write('<li><a href="%s">%s</a>\n' % (key, key))
-
-            sub_html = os.path.join(index_dir, key, 'index.html')
-            sub = open(sub_html, 'w')
-            sub.writelines(['<html>\n',
-                            '<body>\n',
-                            '<h1>%s Distributions</h1>\n' % key,
-                            '<ul>\n'])
-
-            for revision, archive in value:
-                self._blather('  -> %s, %s' % (revision, archive))
-                sub.write('<li><a href="../../%s">%s</a>\n'
-                                % (archive, archive))
-
-            sub.writelines(['</ul>\n',
-                            '</body>\n',
-                            '</html>\n'])
-            sub.close()
-
-        top.writelines(['</ul>\n',
-                        '</body>\n',
-                        '</html>\n'])
-        top.close()
-
-    def _blather(self, text):
+    def blather(self, text):
         if self.options.verbose:
             print text
 
-    def _expandRequirements(self, args):
-        args = list(args)
-        if self.options.fetch_site_packages:
-            for dist in pkg_resources.working_set:
-                args.append('%s == %s' % (dist.key, dist.version))
-
-        self.requirements = list(pkg_resources.parse_requirements(args))
-
-    def _extractNameVersion(self, filename):
-        # -> (project, version)
-        self._blather('Parsing: %s' % filename)
-
-        archive = _getArchiver(filename)
-        if archive is None:
-            self._blather('Unknown archive -- ignored')
-            return None, None
-
-        try:
-            names = archive.names()
-            has_setup = False
-            for name in names:
-
-                if name.endswith('PKG-INFO'):
-
-                    project, version = None, None
-
-                    for line in archive.lines(name):
-                        key, value = line.split(':', 1)
-
-                        if key == 'Name':
-                            project = value.strip()
-                            if version is not None:
-                                return project, version
-
-                        elif key == 'Version':
-                            version = value.strip()
-                            if project is not None:
-                                return project, version
-                elif name.endswith('/setup.py'):
-                    has_setup = True
-
-            # no PKG-INFO found, do it the hard way.
-            if has_setup:
-                tmpdir = tempfile.mkdtemp()
-                try:
-                    for name in names:
-                        archive.extract(name, tmpdir)
-                    command = ('cd %s/%s && %s setup.py --name --version'
-                                % (tmpdir, names[0], sys.executable))
-                    popen = subprocess.Popen(command,
-                                             stdout=subprocess.PIPE,
-                                             shell=True,
-                                            )
-                    output = popen.communicate()[0]
-                    return tuple(output.splitlines()[:2])
-                finally:
-                    shutil.rmtree(tmpdir)
-            return None, None
-        finally:
-            archive.close()
 
 def main():
     try:
