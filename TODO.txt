@@ -1,0 +1,23 @@
+compoze TOODs
+
+  - [X] Break monolithic command (version 0.1) into subcommands, and make
+        them pluggable via entry points.
+
+  - [_] Use a config file for defaults like:
+   
+          o 'index_url' lists
+
+          o verbosity
+
+        etc.  Question: where should it go?
+
+  - [_] Add an 'install' command, which does like 'easy_install' but
+        with the following differences:
+
+          o it is willing to check multipe indexes
+
+          o it records the index from which each package was downloaded
+            somewhere (do we care?)
+
+  - [_] Add an 'updgrade' command, which checks all installed packages
+        in the working set against the specified (or configured) indexes).
