@@ -48,6 +48,12 @@ class Compozer:
             usage="%prog [GLOBAL_OPTOINS] [command [COMMAND_OPTIONS]* [COMMAND_ARGS]]")
 
         parser.add_option(
+            '-s', '--help-commands',
+            action='store_true',
+            dest='help_commands',
+            help="Show command help")
+
+        parser.add_option(
             '-q', '--quiet',
             action='store_false',
             dest='verbose',
@@ -63,6 +69,12 @@ class Compozer:
         options, args = parser.parse_args(mine)
 
         self.options = options
+
+        if options.help_commands:
+            keys = _COMMANDS.keys()
+            keys.sort()
+            val = 'Valid commands are: ' + ' '.join(keys)
+            raise ValueError(val)
 
         for command_name, args in queue:
             if command_name is not None:
