@@ -1,6 +1,8 @@
 compoze Changelog
 
-  compoze 0.2 (2007-11-15)
+  compoze 0.2 (2007-11-19)
+
+    - Added '--help-commands' option to show subcommands.
 
     - Broke 'fetch' and 'index' out as subcommands;  other commands can
       be registered using the pkg_resources entry point group,
