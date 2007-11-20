@@ -1,4 +1,4 @@
-""" compoze -- build a new Python package index from source distributions
+""" compoze index -- build a Python package index in a directory
 
 """
 import optparse
@@ -85,7 +85,7 @@ class Indexer:
             '-p', '--path',
             action='store',
             dest='path',
-            default='.',
+            default=global_options.path,
             help="Specify the path in which to build the index")
 
         parser.add_option(

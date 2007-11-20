@@ -1,16 +1,9 @@
-""" compoze -- build a new Python package index from source distributions
+""" compoze show -- show info about distributions for specified requirements
 
 """
-import getopt
 import optparse
-import os
 import pkg_resources
-import shutil
-import subprocess
 import sys
-import tarfile
-import tempfile
-import zipfile
 import StringIO
 
 from setuptools.package_index import PackageIndex
@@ -22,13 +15,6 @@ class Informer:
         argv = list(argv)
         parser = optparse.OptionParser(
             usage="%prog [OPTIONS] app_egg_name [other_egg_name]*")
-
-        parser.add_option(
-            '-p', '--path',
-            action='store',
-            dest='path',
-            default='.',
-            help="Specify the path in which to build the index")
 
         parser.add_option(
             '-u', '--index-url',
@@ -93,19 +79,6 @@ class Informer:
 
         self.options = options
         self._expandRequirements(args)
-
-        path = os.path.abspath(os.path.expanduser(options.path))
-
-        if not os.path.exists(path):
-            os.makedirs(path)
-
-        if not os.path.isdir(path):
-            msg = StringIO.StringIO()
-            msg.write('Not a directory: %s\n\n' % path)
-            msg.write(parser.format_help())
-            raise ValueError(msg.getvalue())
-
-        self.path = path
 
     def __call__(self):
 

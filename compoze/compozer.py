@@ -1,8 +1,7 @@
-""" compoze -- build a new Python package index from source distributions
+""" compoze -- command driver
 
 """
 import optparse
-import os
 import pkg_resources
 import sys
 
@@ -65,6 +64,13 @@ class Compozer:
             dest='verbose',
             default=True,
             help="Show progress")
+
+        parser.add_option(
+            '-p', '--path',
+            action='store',
+            dest='path',
+            default='.',
+            help="Path for indexing")
 
         options, args = parser.parse_args(mine)
 

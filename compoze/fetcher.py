@@ -1,16 +1,12 @@
-""" compoze -- build a new Python package index from source distributions
+""" compoze fetch -- download distributions for given requirements
 
 """
-import getopt
 import optparse
 import os
 import pkg_resources
 import shutil
-import subprocess
 import sys
-import tarfile
 import tempfile
-import zipfile
 import StringIO
 
 from setuptools.package_index import PackageIndex
@@ -27,7 +23,7 @@ class Fetcher:
             '-p', '--path',
             action='store',
             dest='path',
-            default='.',
+            default=global_options.path,
             help="Specify the path in which to build the index")
 
         parser.add_option(
