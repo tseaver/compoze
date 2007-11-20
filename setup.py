@@ -12,7 +12,7 @@
 #
 ##############################################################################
 
-__version__ = '0.2'
+__version__ = '0.2dev'
 
 from ez_setup import use_setuptools
 use_setuptools()
@@ -59,6 +59,7 @@ setup(name='compoze',
         'compoze_commands': [
          'fetch = compoze.fetcher:Fetcher',
          'index = compoze.indexer:Indexer',
+         'show = compoze.informer:Informer',
         ],
       },
 )

@@ -1,5 +1,10 @@
 compoze Changelog
 
+  After compoze 0.2
+
+    - Added 'show' command, which displays locations for one or more
+      requirements across a set of indexes.
+
   compoze 0.2 (2007-11-19)
 
     - Added '--help-commands' option to show subcommands.
