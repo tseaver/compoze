@@ -45,6 +45,13 @@ class Informer:
             help="Fetch requirements used in site-packages")
 
         parser.add_option(
+            '-o', '--show-only-best',
+            action='store_true',
+            dest='only_best',
+            default=False,
+            help="Show only 'best' distribution satisfying each requirement")
+
+        parser.add_option(
             '-b', '--include-binary-eggs',
             action='store_false',
             dest='source_only',
@@ -152,6 +159,9 @@ class Informer:
             if dist in rqmt and (dist.precedence <= pkg_resources.SOURCE_DIST
                                   or not self.options.source_only):
                 yield dist
+
+                if self.options.only_best:
+                    break
 
 
 def main():
