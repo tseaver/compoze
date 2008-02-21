@@ -107,8 +107,9 @@ class Fetcher:
 
     def download_distributions(self):
 
-        # First, collect best sdist candidate for the requirment from each 
+        # First, collect best sdist candidate for the requirement from each 
         # index into a self.tmpdir
+        
         # XXX ignore same-name problem for now
 
         for index_url in self.options.index_urls:
