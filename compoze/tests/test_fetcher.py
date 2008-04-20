@@ -1,6 +1,5 @@
 import unittest
 import os
-import tempfile
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -15,6 +14,7 @@ class FetcherTests(unittest.TestCase):
         default = kw.copy()
         default.setdefault('verbose', False)
         values = Values(default)
+        values.path = '.'
         return self._getTargetClass()(values, *args)
 
     def test_ctor_empty_argv_raises(self):

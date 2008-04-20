@@ -138,6 +138,7 @@ class IndexerTests(unittest.TestCase):
         default = kw.copy()
         default.setdefault('verbose', False)
         values = Values(default)
+        values.path = '.'
         return self._getTargetClass()(values, *args)
 
     def test__extractNameVersion_non_archive(self):

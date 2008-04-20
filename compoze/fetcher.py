@@ -151,7 +151,7 @@ class Fetcher:
         args = list(args)
         if self.options.fetch_site_packages:
             for dist in pkg_resources.working_set:
-                args.append('%s == %s' % (dist.key, dist.version))
+                args.append('%s == %s' % (dist.project_name, dist.version))
 
         self.requirements = list(pkg_resources.parse_requirements(args))
 
