@@ -100,9 +100,9 @@ class Compozer:
             print text
 
 
-def main():
+def main(argv=sys.argv[1:]):
     try:
-        compozer = Compozer(sys.argv[1:])
+        compozer = Compozer(argv)
     except ValueError, e:
         print str(e)
         sys.exit(1)
