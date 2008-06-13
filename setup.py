@@ -60,6 +60,7 @@ setup(name='compoze',
          'fetch = compoze.fetcher:Fetcher',
          'index = compoze.indexer:Indexer',
          'show = compoze.informer:Informer',
+         'pool = compoze.pooler:Pooler',
         ],
       },
 )
