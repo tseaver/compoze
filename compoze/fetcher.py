@@ -120,10 +120,10 @@ class Fetcher:
 
             source_only = self.options.source_only
             for rqmt in self.requirements:
-                self._blather('Fetching: %s' % rqmt)
+                self._blather('Fetching (%s): %s' % (index_url, rqmt))
                 dist = index.fetch_distribution(rqmt, self.tmpdir,
                                                 source=source_only)
-                self._blather('Found: %s' % dist)
+                self._blather('Found (%s): %s' % (index_url, dist))
 
         self._blather('=' * 50)
         self._blather('Merging indexes')

@@ -49,12 +49,21 @@ class ZipArchive:
     def extract(self, name, tempdir):
         if self.closed:
             raise IOError('closed')
-        data = self.zipf.read(name)
         thedir = os.path.split(name)[0]
-        os.makedirs(os.path.join(tempdir, thedir))
-        fn = os.path.join(tempdir, name)
-        f = open(fn, 'wb')
-        f.write(data)
+        t = os.path.join(tempdir, thedir)
+        if not os.path.exists(t):
+            os.makedirs(t)
+
+        if name.endswith('/'):
+            fn = os.path.join(tempdir, name[:-1])
+            if not os.path.exists(fn):
+                os.makedirs(fn)
+        else:
+            data = self.zipf.read(name)
+            fn = os.path.join(tempdir, name)
+            f = open(fn, 'wb')
+            f.write(data)
+            f.close()
             
     def close(self):
         self.zipf.close()
