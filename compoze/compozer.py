@@ -22,10 +22,11 @@ for entry in pkg_resources.iter_entry_points('compoze_commands'):
 
     _COMMANDS[entry.name] = klass
 
+
 class Compozer:
 
     def __init__(self, argv=None):
-    
+
         mine = []
         queue = [(None, mine)]
         self.commands = []
@@ -43,8 +44,9 @@ class Compozer:
 
         _recordCommand(None)
 
-        parser = optparse.OptionParser(
-            usage="%prog [GLOBAL_OPTOINS] [command [COMMAND_OPTIONS]* [COMMAND_ARGS]]")
+        usage= "%prog [GLOBAL_OPTIONS] " \
+               "[command [COMMAND_OPTIONS]* [COMMAND_ARGS]]"
+        parser = optparse.OptionParser(usage=usage)
 
         parser.add_option(
             '-s', '--help-commands',
