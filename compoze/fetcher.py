@@ -1,6 +1,3 @@
-""" compoze fetch -- download distributions for given requirements
-
-"""
 import optparse
 import os
 import pkg_resources
@@ -11,10 +8,29 @@ import StringIO
 
 from setuptools.package_index import PackageIndex
 
+
+class CompozePackageIndex(PackageIndex):
+
+    def __init__(self, *args, **kwargs):
+        PackageIndex.__init__(self, *args, **kwargs)
+        self.debug_msgs = []
+        self.info_msgs = []
+        self.warn_msgs = []
+
+    def debug(self, msg, *args):
+        self.debug_msgs.append((msg, args))
+
+    def info(self, msg, *args):
+        self.info_msgs.append((msg, args))
+
+    def warn(self, msg, *args):
+        self.warn_msgs.append((msg, args))
+
+
 class Fetcher:
+    '''Download distributions for given requirements'''
 
     def __init__(self, global_options, *argv):
-    
         argv = list(argv)
         parser = optparse.OptionParser(
             usage="%prog [OPTIONS] app_egg_name [other_egg_name]*")
@@ -24,7 +40,7 @@ class Fetcher:
             action='store',
             dest='path',
             default=global_options.path,
-            help="Specify the path in which to build the index")
+            help="Specify the path in which to store the fetched dists")
 
         parser.add_option(
             '-u', '--index-url',
@@ -32,6 +48,13 @@ class Fetcher:
             dest='index_urls',
             default=[],
             help="Add a candidate index used to find distributions")
+
+        parser.add_option(
+            '-l', '--find-link',
+            action='append',
+            dest='find_links',
+            default=[],
+            help="Add a find-link url")
 
         parser.add_option(
             '-f', '--fetch-site-packages',
@@ -72,7 +95,7 @@ class Fetcher:
         if (not options.fetch_site_packages and
             len(args) == 0):
             msg = StringIO.StringIO()
-            msg.write('fetch: Either specify requirements, or else'
+            msg.write('fetch: Either specify requirements, or else '
                                     '--fetch-site-packages .\n\n')
             msg.write(parser.format_help())
             raise ValueError(msg.getvalue())
@@ -107,41 +130,77 @@ class Fetcher:
 
     def download_distributions(self):
 
-        # First, collect best sdist candidate for the requirement from each 
-        # index into a self.tmpdir
-        
+        # First, collect best sdist candidate for the requirement
+        # from each index into a self.tmpdir
+
         # XXX ignore same-name problem for now
 
+        self._blather('='*50)
+        self._blather('Scanning indexes for requirements')
+        self._blather('='*50)
+        results = {}
         for index_url in self.options.index_urls:
-            self._blather('=' * 50)
             self._blather('Package index: %s' % index_url)
-            self._blather('=' * 50)
-            index = PackageIndex(index_url=index_url)
+            index = CompozePackageIndex(index_url=index_url)
 
             source_only = self.options.source_only
+
             for rqmt in self.requirements:
-                self._blather('Fetching (%s): %s' % (index_url, rqmt))
+                if results.get(rqmt, False):
+                    continue
                 dist = index.fetch_distribution(rqmt, self.tmpdir,
                                                 source=source_only)
-                self._blather('Found (%s): %s' % (index_url, dist))
+                self._blather('  Searched for %s; found: %s'
+                              % (rqmt, (dist is not None)))
+                results[rqmt] = (dist is not None)
+
+        if self.options.find_links:
+            self._blather('='*50)
+            self._blather('Scanning find-links for requirements')
+            index = CompozePackageIndex()
+            for find_link in self.options.find_links:
+                index.add_find_links([find_link])
+                self._blather('  '+find_link)
+            self._blather('='*50)
+
+            for rqmt in self.requirements:
+                if results.get(rqmt, False):
+                    continue
+                dist = index.fetch_distribution(rqmt, self.tmpdir,
+                                                source=source_only)
+                self._blather('  Searched for %s; found: %s'
+                              % (rqmt, (dist is not None)))
+                results[rqmt] = (dist is not None)
 
         self._blather('=' * 50)
         self._blather('Merging indexes')
         self._blather('=' * 50)
 
         local_index = os.path.join(self.tmpdir)
-        local = PackageIndex(index_url=local_index ,
-                             search_path=(), # ignore installed!
-                            )
+        local = CompozePackageIndex(index_url=local_index,
+                                    search_path=(), # ignore installed!
+                                    )
 
         for rqmt in self.requirements:
-            self._blather('Resolving: %s' % rqmt)
-            dist = local.fetch_distribution(rqmt, '.', force_scan=True)
+            dist = local.fetch_distribution(rqmt,
+                                            self.tmpdir,
+                                            force_scan=True)
             if dist is not None:
-                self._blather('Found: %s' % dist)
                 shutil.copy(dist.location, self.path)
-            else:
-                print 'Not found: %s' % rqmt
+
+        if self.options.verbose:
+            self._blather('=' * 50)
+            self._blather('Final Results')
+            self._blather('=' * 50)
+
+            found = [k for k, v in results.items() if v]
+            notfound = [k for k, v in results.items() if not v]
+            self._blather('Found eggs:')
+            for x in found:
+                self._blather('  '+str(x))
+            self._blather('Not found eggs:')
+            for x in notfound:
+                self._blather('  '+str(x))
 
     def _blather(self, text):
         if self.options.verbose:
