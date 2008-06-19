@@ -3,6 +3,7 @@
 """
 import optparse
 import pkg_resources
+import textwrap
 import sys
 
 
@@ -21,6 +22,14 @@ for entry in pkg_resources.iter_entry_points('compoze_commands'):
         raise ValueError('Clash on compoze command: %s' % entry.name)
 
     _COMMANDS[entry.name] = klass
+
+
+def get_description(command):
+    klass = _COMMANDS[command]
+    doc = getattr(klass, '__doc__', '')
+    if doc is None:
+        return ''
+    return ' '.join([x.lstrip() for x in doc.split('\n')])
 
 
 class Compozer:
@@ -81,8 +90,15 @@ class Compozer:
         if options.help_commands:
             keys = _COMMANDS.keys()
             keys.sort()
-            val = 'Valid commands are: ' + ' '.join(keys)
-            raise ValueError(val)
+            print 'Valid commands are:'
+            for x in keys:
+                print ' ', x
+                doc = get_description(x)
+                if doc:
+                    print textwrap.fill(doc,
+                                        initial_indent='    ',
+                                        subsequent_indent='    ')
+            return
 
         for command_name, args in queue:
             if command_name is not None:

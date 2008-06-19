@@ -1,6 +1,3 @@
-""" compoze pool -- move all archives into a common pool directory
-
-"""
 import optparse
 import os
 import shutil
@@ -21,6 +18,9 @@ class NoArchivesException(Exception):
 
 
 class Pooler(object):
+    '''Move all archives into a common pool directory and symlink back the
+    results.
+    '''
 
     def __init__(self, global_options, *argv):
 
