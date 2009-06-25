@@ -6,19 +6,13 @@ import pkg_resources
 import textwrap
 import sys
 
-
-def _resolve(dotted_or_ep):
-    """ Resolve a dotted name or setuptools entry point to a callable.
-    """
-    return pkg_resources.EntryPoint.parse('x=%s' % dotted_or_ep).load(False)
-
 _COMMANDS = {}
 
 for entry in pkg_resources.iter_entry_points('compoze_commands'):
 
     klass = entry.load(False)
 
-    if entry.name in _COMMANDS:
+    if entry.name in _COMMANDS: #pragma NO COVERAGE
         raise ValueError('Clash on compoze command: %s' % entry.name)
 
     _COMMANDS[entry.name] = klass
@@ -34,11 +28,14 @@ def get_description(command):
 
 class Compozer:
 
-    def __init__(self, argv=None):
+    def __init__(self, argv=None, logger=None):
 
         mine = []
         queue = [(None, mine)]
         self.commands = []
+        if logger is None:
+            logger = self._print
+        self.logger = logger
 
         def _recordCommand(arg):
             current, current_args = queue[-1]
@@ -90,14 +87,14 @@ class Compozer:
         if options.help_commands:
             keys = _COMMANDS.keys()
             keys.sort()
-            print 'Valid commands are:'
+            self.error('Valid commands are:')
             for x in keys:
-                print ' ', x
+                self.error(' %s' % x)
                 doc = get_description(x)
                 if doc:
-                    print textwrap.fill(doc,
-                                        initial_indent='    ',
-                                        subsequent_indent='    ')
+                    self.error(textwrap.fill(doc,
+                                             initial_indent='    ',
+                                             subsequent_indent='    '))
             return
 
         for command_name, args in queue:
@@ -113,18 +110,24 @@ class Compozer:
         for command in self.commands:
             command()
 
+    def _print(self, text): # pragma NO COVERAGE
+        print text
+
+    def error(self, text):
+        self.logger(text)
+
     def blather(self, text):
         if self.options.verbose:
-            print text
+            self.logger(text)
 
 
 def main(argv=sys.argv[1:]):
     try:
         compozer = Compozer(argv)
-    except ValueError, e:
+    except ValueError, e: #pragma NO COVERAGE
         print str(e)
         sys.exit(1)
     compozer()
 
-if __name__ == '__main__':
+if __name__ == '__main__': #pragma NO COVERAGE
     main()
