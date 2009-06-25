@@ -1,21 +1,25 @@
 compoze Changelog
+=================
 
-  After compoze 0.2
+After compoze 0.2
+-----------------
 
-    - Added 'pool' command which moves all archives in the currently directory
-      to a common pool directory and symlinks them back
+- Added 'pool' command which moves all archives in the currently directory
+  to a common pool directory and symlinks them back
 
-    - Added 'show' command, which displays locations for one or more
-      requirements across a set of indexes.
+- Added 'show' command, which displays locations for one or more
+  requirements across a set of indexes.
 
-  compoze 0.2 (2007-11-19)
+compoze 0.2 (2007-11-19)
+------------------------
 
-    - Added '--help-commands' option to show subcommands.
+- Added '--help-commands' option to show subcommands.
 
-    - Broke 'fetch' and 'index' out as subcommands;  other commands can
-      be registered using the pkg_resources entry point group,
-      'compoze_commands'.
+- Broke 'fetch' and 'index' out as subcommands;  other commands can
+  be registered using the pkg_resources entry point group,
+  'compoze_commands'.
 
-  compoze 0.1 (2007-11-14)
+compoze 0.1 (2007-11-14)
+------------------------
 
-    - Initial alpha release.
+- Initial release.
