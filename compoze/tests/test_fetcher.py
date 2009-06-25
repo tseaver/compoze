@@ -1,9 +1,43 @@
 import unittest
-import os
 
-here = os.path.abspath(os.path.dirname(__file__))
+class CompozePackageIndexTests(unittest.TestCase):
+
+    def _getTargetClass(self):
+        from compoze.fetcher import CompozePackageIndex
+        return CompozePackageIndex
+
+    def _makeOne(self, *args, **kw):
+        return self._getTargetClass()(*args, **kw)
+
+    def test_ctor(self):
+        cpi = self._makeOne()
+        self.assertEqual(cpi.debug_msgs, [])
+        self.assertEqual(cpi.info_msgs, [])
+        self.assertEqual(cpi.warn_msgs, [])
+
+    def test_debug(self):
+        cpi = self._makeOne()
+        cpi.debug('foo')
+        self.assertEqual(cpi.debug_msgs, [('foo', ())])
+
+    def test_info(self):
+        cpi = self._makeOne()
+        cpi.info('foo')
+        self.assertEqual(cpi.info_msgs, [('foo', ())])
+
+    def test_warn(self):
+        cpi = self._makeOne()
+        cpi.warn('foo')
+        self.assertEqual(cpi.warn_msgs, [('foo', ())])
 
 class FetcherTests(unittest.TestCase):
+
+    _tempdir = None
+
+    def tearDown(self):
+        if self._tempdir is not None:
+            import shutil
+            shutil.rmtree(self._tempdir)
 
     def _getTargetClass(self):
         from compoze.fetcher import Fetcher
@@ -11,11 +45,19 @@ class FetcherTests(unittest.TestCase):
 
     def _makeOne(self, *args, **kw):
         from optparse import Values
+        logger = kw.pop('logger', None)
         default = kw.copy()
         default.setdefault('verbose', False)
         values = Values(default)
         values.path = '.'
+        if logger is not None:
+            return self._getTargetClass()(values, logger=logger, *args)
         return self._getTargetClass()(values, *args)
+
+    def _makeTempDir(self):
+        import tempfile
+        result = self._tempdir = tempfile.mkdtemp()
+        return result
 
     def test_ctor_empty_argv_raises(self):
         self.assertRaises(ValueError, self._makeOne, argv=[])
@@ -26,7 +68,166 @@ class FetcherTests(unittest.TestCase):
                           '--path=%s' % __file__,
                          )
 
-    def test_ctor_default_index_url_cheeseshop(self):
-        tested = self._makeOne('--fetch-site-packages')
-        self.assertEqual(tested.options.index_urls,
+    def test_ctor_valid_path_existing(self):
+        path = self._makeTempDir()
+        fetcher = self._makeOne('--fetch-site-packages',
+                                '--path=%s' % path)
+        self.assertEqual(fetcher.path, path)
+
+    def test_ctor_valid_path_non_existing_creates(self):
+        import os
+        path = self._makeTempDir()
+        target = os.path.join(path, 'target')
+        fetcher = self._makeOne('--fetch-site-packages',
+                                '--path=%s' % target)
+        self.failUnless(os.path.isdir(target))
+        self.assertEqual(fetcher.path, target)
+
+    def test_ctor_default_index_url_is_cheeseshop(self):
+        fetcher = self._makeOne('--fetch-site-packages')
+        self.assertEqual(fetcher.options.index_urls,
                          ['http://pypi.python.org/simple'])
+
+    def test_ctor_default_logger(self):
+        from compoze.fetcher import _print
+        fetcher = self._makeOne('--fetch-site-packages')
+        self.failUnless(fetcher._logger is _print)
+
+    def test_ctor_explicit_logger(self):
+        fetcher = self._makeOne('--fetch-site-packages', logger=self)
+        self.failUnless(fetcher._logger is self)
+
+    def test_ctor_default_logger(self):
+        from compoze.fetcher import CompozePackageIndex
+        fetcher = self._makeOne('--fetch-site-packages')
+        self.failUnless(fetcher.index_factory is CompozePackageIndex)
+
+    def test_ctor_explicit_index_url(self):
+        fetcher = self._makeOne('--fetch-site-packages',
+                               '--index-url=http://dist.repoze.org/nonesuch',
+                              )
+        self.assertEqual(fetcher.options.index_urls,
+                         ['http://dist.repoze.org/nonesuch'])
+
+    def test_ctor_w_simple_requirement(self):
+        fetcher = self._makeOne('compoze')
+        self.assertEqual(len(fetcher.requirements), 1)
+        self.assertEqual(fetcher.requirements[0].project_name, 'compoze')
+        self.assertEqual(fetcher.requirements[0].specs, [])
+        self.assertEqual(fetcher.requirements[0].extras, ())
+
+    def test_ctor_w_versioned_requirement(self):
+        fetcher = self._makeOne('compoze==0.1')
+        self.assertEqual(len(fetcher.requirements), 1)
+        self.assertEqual(fetcher.requirements[0].project_name, 'compoze')
+        self.assertEqual(fetcher.requirements[0].specs, [('==', '0.1')])
+        self.assertEqual(fetcher.requirements[0].extras, ())
+
+    def test_ctor_w_multiversioned_requirement(self):
+        fetcher = self._makeOne('compoze>=0.1,<=0.3dev')
+        self.assertEqual(len(fetcher.requirements), 1)
+        self.assertEqual(fetcher.requirements[0].project_name, 'compoze')
+        self.assertEqual(fetcher.requirements[0].specs,
+                         [('>=', '0.1'), ('<=', '0.3dev')])
+        self.assertEqual(fetcher.requirements[0].extras, ())
+
+    def test_ctor_w_requirement_single_extra(self):
+        fetcher = self._makeOne('compoze[nonesuch]')
+        self.assertEqual(len(fetcher.requirements), 1)
+        self.assertEqual(fetcher.requirements[0].project_name, 'compoze')
+        self.assertEqual(fetcher.requirements[0].specs, [])
+        self.assertEqual(fetcher.requirements[0].extras, ('nonesuch',))
+
+    def test_ctor_w_requirement_multiple_extra(self):
+        fetcher = self._makeOne('compoze[nonesuch,bother]')
+        self.assertEqual(len(fetcher.requirements), 1)
+        self.assertEqual(fetcher.requirements[0].project_name, 'compoze')
+        self.assertEqual(fetcher.requirements[0].specs, [])
+        self.assertEqual(fetcher.requirements[0].extras,
+                         ('nonesuch', 'bother'))
+
+    def test_blather_not_verbose(self):
+        def _dont_go_here(*args):
+            assert 0, args
+        fetcher = self._makeOne('--fetch-site-packages',
+                                 '--quiet',
+                                 logger=_dont_go_here)
+        fetcher.blather('foo') # doesn't assert
+
+    def test_blather_verbose(self):
+        logged = []
+        fetcher = self._makeOne('--fetch-site-packages',
+                                 '--verbose',
+                                 logger=logged.append)
+        fetcher.blather('foo')
+        self.assertEqual(logged, ['foo'])
+
+    def test_download_distributions_no_find_links(self):
+        import os
+        from pkg_resources import Requirement
+        import tempfile
+        tmpdir = self._tempdir = tempfile.mkdtemp()
+        target = os.path.join(tmpdir, 'target')
+        os.makedirs(target)
+        path = os.path.join(tmpdir, 'path')
+        os.makedirs(path)
+        rqmt = Requirement.parse('compozer')
+        cheeseshop = DummyIndex({rqmt: DummyDistribution('compoze')})
+        local = DummyIndex({rqmt: DummyDistribution('compoze', target)})
+        def _factory(index_url, search_path=None):
+            if index_url == 'http://pypi.python.org/simple':
+                assert search_path is None
+                return cheeseshop
+            if index_url ==  target:
+                assert search_path is ()
+                return local
+            raise ValueError(index_url)
+        fetcher = self._makeOne('--quiet', '--path=%s' % path, 'compozer')
+        fetcher.index_factory = _factory
+        fetcher.tmpdir = target
+
+        fetcher.download_distributions()
+
+        self.assertEqual(cheeseshop._fetched_with,
+                         [(rqmt, target, False, True, False)])
+
+        self.assertEqual(local._fetched_with,
+                         [(rqmt, target, True, False, False)])
+
+        self.failUnless(os.path.isfile(os.path.join(path, 'compoze')))
+
+    # TODO
+    #def test_download_distributions_w_missing_dist(self):
+    #def test_download_distributions_w_duplicated_dists(self):
+    #def test_download_distributions_w_find_links(self):
+    #def test_download_distributions_w_find_links_w_duplicated_dists(self):
+    #def test_download_distributions_w_verbose(self):
+
+
+class DummyDistribution(object):
+
+    def __init__(self, name, tmpdir=None):
+        self.name = name
+        self.tmpdir = tmpdir
+
+    def _get_location(self):
+        import os
+        result = os.path.join(self.tmpdir, self.name) 
+        f = open(result, 'wb')
+        f.write(self.name)
+        f.flush()
+        f.close()
+        return result
+    location = property(_get_location,)
+
+class DummyIndex:
+
+    def __init__(self, mapping):
+        self._mapping = mapping
+        self._fetched_with = []
+
+    def fetch_distribution(self, rqmt, target_dir,
+                           force_scan=False, source=False, develop_ok=False):
+        self._fetched_with.append(
+                    (rqmt, target_dir, force_scan, source, develop_ok))
+        return self._mapping.get(rqmt)
