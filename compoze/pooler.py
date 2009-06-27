@@ -1,32 +1,29 @@
 import optparse
 import os
 import shutil
+import StringIO
 import sys
 
 ARCHIVE_EXTS = ('tar.gz', 'tgz', 'zip', 'tar.bz2', 'tbz')
 
 
-def isarchive(f):
+def is_archive(f):
     for x in ARCHIVE_EXTS:
         if f.endswith('.'+x):
             return True
     return False
 
 
-class NoArchivesException(Exception):
-    pass
-
-
 class Pooler(object):
-    '''Move all archives into a common pool directory and symlink back the
-    results.
-    '''
+    """ Move archives into a common pool directory; symlink back into path.
+    """
 
-    def __init__(self, global_options, *argv):
+    def __init__(self, global_options, *argv, **kw):
 
         argv = list(argv)
-        parser = optparse.OptionParser(
-            usage="%prog pool [OPTIONS] pool_dir\n\n  " + __doc__.strip())
+        parser = self.parser = optparse.OptionParser(
+            usage="%prog pool [OPTIONS] pool_dir\n\n  " +
+                   self.__doc__.strip())
 
         parser.add_option(
             '-q', '--quiet',
@@ -41,66 +38,80 @@ class Pooler(object):
             default=global_options.verbose,
             help="Show progress")
 
+        parser.add_option(
+            '-p', '--path',
+            action='store',
+            dest='path',
+            default='.',
+            help="Path to process")
+
         options, args = parser.parse_args(argv)
 
-        self.parser = parser
+        if len(args) != 1:
+            msg = StringIO.StringIO()
+            msg.write('No pool_dir!\n\n')
+            msg.write(parser.format_help())
+            raise ValueError(msg.getvalue())
+
         self.options = options
-        self.args = args
+        self.pool_dir = args[0]
+        self.release_dir = os.path.abspath(options.path)
+        self._logger = kw.get('logger', _print)
 
-    def __call__(self):
-        if len(self.args) == 0:
-            self.parser.print_help()
-            return
-        try:
-            all, pending = self.moveToPool(self.args[0])
-            print "Updated %i out of %i archives" % (len(pending), len(all))
-        except NoArchivesException, err:
-            print "Couldn't find any archives in '%s'" % self.releasedir
-
-    def _blather(self, text):
+    def blather(self, text):
         if self.options.verbose:
-            print text
+            self._logger(text)
 
-    @property
-    def releasedir(self):
-        return os.path.abspath(os.curdir)
-
-    @property
-    def archives(self):
+    def listArchives(self):
         all = []
         pending = []
         archives = ([], [])
-        for f in os.listdir(self.releasedir):
-            full = os.path.join(self.releasedir, f)
-            if isarchive(full) and os.path.isfile(full):
+        for filename in os.listdir(self.release_dir):
+            full = os.path.join(self.release_dir, filename)
+            if is_archive(full) and os.path.isfile(full):
                 if not os.path.islink(full):
-                    pending.append(f)
-                all.append(f)
+                    pending.append(filename)
+                all.append(filename)
         return all, pending
 
-    def moveToPool(self, pooldir):
-        all, pending = self.archives
+    def moveToPool(self):
+        all, pending = self.listArchives()
         if len(all) == 0:
-            raise NoArchivesException()
+            raise ValueError('No non-link archives in release dir: %s'
+                                % self.release_dir)
 
-        for f in pending:
-            full = os.path.join(self.releasedir, f)
-            name = f.split('-', 2)[0]
-            poolpath = os.path.join(pooldir, name.lower())
-            if not os.path.exists(poolpath):
-                os.makedirs(poolpath)
-                self._blather('Created new pool dir %s' % poolpath)
-            archivepath = os.path.join(poolpath, f)
-            if not os.path.exists(archivepath):
-                shutil.move(full, archivepath)
-                self._blather('Moved %s to %s' % (full, archivepath))
-            if os.path.exists(full):
-                os.remove(full)
-            os.symlink(archivepath, full)
+        if not os.path.exists(self.pool_dir):
+            self.blather('Created new pool dir %s' % self.pool_dir)
+            os.makedirs(self.pool_dir)
+
+        if not os.path.isdir(self.pool_dir):
+            raise ValueError('Pool dir is not a directory: %s'
+                                % self.pool_dir)
+
+        for archive in pending:
+            source = os.path.join(self.release_dir, archive)
+            target = os.path.join(self.pool_dir, archive)
+            if not os.path.exists(target):
+                shutil.move(source, target)
+                self.blather('Moved %s to %s' % (source, target))
+            if os.path.exists(source):
+                os.remove(source)
+            os.symlink(target, source)
+
         return all, pending
 
+    def __call__(self): #pragma NO COVERAGE
+        try:
+            all, pending = self.moveToPool()
+            self.blather(
+                "Updated %i out of %i archives" % (len(pending), len(all)))
+        except ValueError, e:
+            self.blather(str(e))
 
-def main():
+def _print(text): #pragma NO COVERAGE
+    print text
+
+def main(): #pragma NO COVERAGE
     try:
         update_pool = Pooler(sys.argv[1:])
     except ValueError, e:
@@ -108,5 +119,5 @@ def main():
         sys.exit(1)
     update_pool()
 
-if __name__ == '__main__':
+if __name__ == '__main__': #pragma NO COVERAGE
     main()
