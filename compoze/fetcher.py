@@ -120,10 +120,7 @@ class Fetcher:
             raise ValueError(msg.getvalue())
 
         self.path = path
-        logger = kw.get('logger')
-        if logger is None:
-            logger = _print
-        self._logger = logger
+        self._logger = kw.get('logger', _print)
 
     def blather(self, text):
         if self.options.verbose:

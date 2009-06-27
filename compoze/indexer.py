@@ -79,7 +79,7 @@ def _getArchiver(filename):
 
 class Indexer:
 
-    def __init__(self, global_options, *argv):
+    def __init__(self, global_options, *argv, **kw):
     
         argv = list(argv)
         parser = optparse.OptionParser(
@@ -132,15 +132,11 @@ class Indexer:
             raise ValueError(msg.getvalue())
 
         self.path = path
+        self._logger = kw.get('logger', _print)
 
-    def __call__(self):
-
-        self.tmpdir = tempfile.mkdtemp(dir='.')
-        try:
-            self.make_index()
-        finally:
-            if not self.options.keep_tempdir:
-                shutil.rmtree(self.tmpdir)
+    def blather(self, text):
+        if self.options.verbose:
+            self._logger(text)
 
     def make_index(self, path=None):
 
@@ -148,9 +144,12 @@ class Indexer:
             path = self.path
 
         index_dir = os.path.join(path, self.options.index_name)
-        self._blather('=' * 50)
-        self._blather('Building index: %s' % index_dir)
-        self._blather('=' * 50)
+        if os.path.exists(index_dir):
+            raise ValueError('Index directory exists: %s' % index_dir)
+
+        self.blather('=' * 50)
+        self.blather('Building index: %s' % index_dir)
+        self.blather('=' * 50)
 
         projects = {}
 
@@ -164,10 +163,9 @@ class Indexer:
                 projects.setdefault(project, []).append((revision, candidate))
 
         items = projects.items()
+        if len(items) == 0:
+            raise ValueError('No distributions in %s' % path)
         items.sort()
-
-        if os.path.exists(index_dir):
-            raise ValueError('Index directory exists: %s' % index_dir)
 
         os.makedirs(index_dir)
         index_html = os.path.join(index_dir, 'index.html')
@@ -178,10 +176,10 @@ class Indexer:
                         '<ul>\n'])
 
         for key, value in items:
-            self._blather('Project: %s' % key)
+            self.blather('Project: %s' % key)
             dirname = os.path.join(index_dir, key)
             os.makedirs(dirname)
-            top.write('<li><a href="%s">%s</a>\n' % (key, key))
+            top.write('<li><a href="%s">%s</a></li>\n' % (key, key))
 
             sub_html = os.path.join(index_dir, key, 'index.html')
             sub = open(sub_html, 'w')
@@ -191,8 +189,8 @@ class Indexer:
                             '<ul>\n'])
 
             for revision, archive in value:
-                self._blather('  -> %s, %s' % (revision, archive))
-                sub.write('<li><a href="../../%s">%s</a>\n'
+                self.blather('  -> %s, %s' % (revision, archive))
+                sub.write('<li><a href="../../%s">%s</a></li>\n'
                                 % (archive, archive))
 
             sub.writelines(['</ul>\n',
@@ -205,17 +203,22 @@ class Indexer:
                         '</html>\n'])
         top.close()
 
-    def _blather(self, text):
-        if self.options.verbose:
-            print text
+    def __call__(self): #pragma NO COVERAGE
+
+        self.tmpdir = tempfile.mkdtemp(dir='.')
+        try:
+            self.make_index()
+        finally:
+            if not self.options.keep_tempdir:
+                shutil.rmtree(self.tmpdir)
 
     def _extractNameVersion(self, filename):
         # -> (project, version)
-        self._blather('Parsing: %s' % filename)
+        self.blather('Parsing: %s' % filename)
 
         archive = _getArchiver(filename)
         if archive is None:
-            self._blather('Unknown archive -- ignored')
+            self.blather('Unknown archive -- ignored')
             return None, None
 
         try:
@@ -262,7 +265,10 @@ class Indexer:
         finally:
             archive.close()
 
-def main():
+def _print(text): #pragma NO COVERAGE
+    print text
+
+def main(): #pragma NO COVERAGE
     try:
         indexer = Indexer(sys.argv[1:])
     except ValueError, e:
@@ -270,5 +276,5 @@ def main():
         sys.exit(1)
     indexer()
 
-if __name__ == '__main__':
+if __name__ == '__main__': #pragma NO COVERAGE
     main()

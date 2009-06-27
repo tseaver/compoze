@@ -185,20 +185,102 @@ class Test__getArchiver(unittest.TestCase):
 
 class IndexerTests(unittest.TestCase):
 
+    _tmpdir = None
+
+    def tearDown(self):
+        if self._tmpdir is not None:
+            import shutil
+            shutil.rmtree(self._tmpdir)
+
     def _getTargetClass(self):
         from compoze.indexer import Indexer
         return Indexer
 
     def _makeOne(self, *args, **kw):
+        logger = kw.pop('logger', None)
         from optparse import Values
         default = kw.copy()
         default.setdefault('verbose', False)
         values = Values(default)
         values.path = '.'
+        if logger is not None:
+            return self._getTargetClass()(values, logger=logger, *args)
         return self._getTargetClass()(values, *args)
+
+    def _makeTempdir(self):
+        import tempfile
+        result = self._tmpdir = tempfile.mkdtemp()
+        return result
 
     def test_ctor_invalid_path(self):
         self.assertRaises(ValueError, self._makeOne, '--path=/nonesuch')
+
+    def test_blather_not_verbose(self):
+        def _dont_go_here(*args):
+            assert 0, args
+        indexer = self._makeOne('--quiet',
+                                logger=_dont_go_here)
+        indexer.blather('foo') # doesn't assert
+
+    def test_blather_verbose(self):
+        logged = []
+        indexer = self._makeOne('--verbose',
+                                logger=logged.append)
+        indexer.blather('foo')
+        self.assertEqual(logged, ['foo'])
+
+    def test_make_index_index_dir_exists_raises(self):
+        import os
+        tmpdir = self._makeTempdir()
+        os.makedirs(os.path.join(tmpdir, 'exists'))
+        indexer = self._makeOne('--path=%s' % tmpdir, '--index-name=exists')
+        self.assertRaises(ValueError, indexer.make_index)
+
+    def test_make_index_empty_raises(self):
+        tmpdir = self._makeTempdir()
+        indexer = self._makeOne('--path=%s' % tmpdir)
+        self.assertRaises(ValueError, indexer.make_index)
+
+    def test_make_index_only_non_distributions_raises(self):
+        import os
+        tmpdir = self._makeTempdir()
+        f = open(os.path.join(tmpdir, 'not-a-distribution.txt'), 'w')
+        f.write('MOVE ALONG')
+        f.flush()
+        f.close()
+        os.makedirs(os.path.join(tmpdir, 'subdir'))
+        indexer = self._makeOne('--path=%s' % tmpdir)
+        self.assertRaises(ValueError, indexer.make_index)
+
+    def test_make_index_w_distribution(self):
+        import os
+        import StringIO
+        import tarfile
+        tmpdir = self._makeTempdir()
+        filename = os.path.join(tmpdir, 'testpackage-3.14.tar.gz')
+        archive = tarfile.TarFile(filename, mode='w')
+        buffer = StringIO.StringIO()
+        buffer.writelines(['Name: testpackage\n', 'Version: 3.14\n'])
+        size = buffer.tell()
+        buffer.seek(0)
+        info = tarfile.TarInfo('PKG-INFO')
+        info.size = size
+        archive.addfile(info, buffer)
+        archive.close()
+        indexer = self._makeOne('--path=%s' % tmpdir)
+
+        indexer.make_index()
+
+        top = open(os.path.join(tmpdir, 'simple', 'index.html')).read()
+        self.failUnless('<h1>Package Index</h1>' in top)
+        self.failUnless(
+                '<li><a href="testpackage">testpackage</a></li>' in top)
+        sub = open(os.path.join(tmpdir, 'simple', 'testpackage', 'index.html')
+                  ).read()
+        self.failUnless('<h1>testpackage Distributions</h1>' in sub)
+        self.failUnless(
+                '<li><a href="../../testpackage-3.14.tar.gz">'
+                'testpackage-3.14.tar.gz</a></li>' in sub)
 
     def test__extractNameVersion_non_archive(self):
         import tempfile
@@ -229,6 +311,25 @@ class IndexerTests(unittest.TestCase):
         archive = tarfile.TarFile(fileobj=tfile, mode='w')
         buffer = StringIO.StringIO()
         buffer.writelines(['Name: testpackage\n', 'Version: 3.14\n'])
+        size = buffer.tell()
+        buffer.seek(0)
+        info = tarfile.TarInfo('PKG-INFO')
+        info.size = size
+        archive.addfile(info, buffer)
+        archive.close()
+        tfile.flush()
+        self.assertEqual(tested._extractNameVersion(tfile.name),
+                         ('testpackage', '3.14'))
+
+    def test__extractNameVersion_archive_w_pkg_info_version_first(self):
+        import StringIO
+        import tarfile
+        import tempfile
+        tested = self._makeOne()
+        tfile = tempfile.NamedTemporaryFile(suffix='.tgz')
+        archive = tarfile.TarFile(fileobj=tfile, mode='w')
+        buffer = StringIO.StringIO()
+        buffer.writelines(['Version: 3.14\n', 'Name: testpackage\n'])
         size = buffer.tell()
         buffer.seek(0)
         info = tarfile.TarInfo('PKG-INFO')
