@@ -202,7 +202,7 @@ class Fetcher:
         for x in notfound:
             self.blather('  ' + str(x))
 
-    def __call__(self):
+    def __call__(self): #pragma NO COVERAGE
 
         self.tmpdir = tempfile.mkdtemp(dir='.')
         try:
@@ -219,11 +219,11 @@ class Fetcher:
 
         self.requirements = list(pkg_resources.parse_requirements(args))
 
-def _print(text):
+def _print(text): #pragma NO COVERAGE
     print text
 
 
-def main():
+def main(): #pragma NO COVERAGE
     try:
         fetcher = Fetcher(sys.argv[1:])
     except ValueError, e:
@@ -231,5 +231,5 @@ def main():
         sys.exit(1)
     fetcher()
 
-if __name__ == '__main__':
+if __name__ == '__main__': #pragma NO COVERAGE
     main()

@@ -32,12 +32,12 @@ class CompozePackageIndexTests(unittest.TestCase):
 
 class FetcherTests(unittest.TestCase):
 
-    _tempdir = None
+    _tmpdir = None
 
     def tearDown(self):
-        if self._tempdir is not None:
+        if self._tmpdir is not None:
             import shutil
-            shutil.rmtree(self._tempdir)
+            shutil.rmtree(self._tmpdir)
 
     def _getTargetClass(self):
         from compoze.fetcher import Fetcher
@@ -56,8 +56,23 @@ class FetcherTests(unittest.TestCase):
 
     def _makeTempDir(self):
         import tempfile
-        result = self._tempdir = tempfile.mkdtemp()
+        result = self._tmpdir = tempfile.mkdtemp()
         return result
+
+    def _makeDirs(self):
+        import os
+        tmpdir = self._makeTempDir()
+        target = os.path.join(tmpdir, 'target')
+        os.makedirs(target)
+        path = os.path.join(self._tmpdir, 'path')
+        os.makedirs(path)
+        return target, path
+
+    def _makeIndex(self, *rqmts, **kw):
+        target = kw.get('target')
+        return DummyIndex(
+                dict([(x, DummyDistribution(x.project_name, target))
+                            for x in rqmts]))
 
     def test_ctor_empty_argv_raises(self):
         self.assertRaises(ValueError, self._makeOne, argv=[])
@@ -165,15 +180,10 @@ class FetcherTests(unittest.TestCase):
     def test_download_distributions_no_find_links(self):
         import os
         from pkg_resources import Requirement
-        import tempfile
-        tmpdir = self._tempdir = tempfile.mkdtemp()
-        target = os.path.join(tmpdir, 'target')
-        os.makedirs(target)
-        path = os.path.join(tmpdir, 'path')
-        os.makedirs(path)
-        rqmt = Requirement.parse('compozer')
-        cheeseshop = DummyIndex({rqmt: DummyDistribution('compoze')})
-        local = DummyIndex({rqmt: DummyDistribution('compoze', target)})
+        target, path = self._makeDirs()
+        rqmt = Requirement.parse('compoze')
+        cheeseshop = self._makeIndex(rqmt)
+        local = self._makeIndex(rqmt, target=target)
         def _factory(index_url, search_path=None):
             if index_url == 'http://pypi.python.org/simple':
                 assert search_path is None
@@ -182,7 +192,7 @@ class FetcherTests(unittest.TestCase):
                 assert search_path is ()
                 return local
             raise ValueError(index_url)
-        fetcher = self._makeOne('--quiet', '--path=%s' % path, 'compozer')
+        fetcher = self._makeOne('--quiet', '--path=%s' % path, 'compoze')
         fetcher.index_factory = _factory
         fetcher.tmpdir = target
 
@@ -196,12 +206,188 @@ class FetcherTests(unittest.TestCase):
 
         self.failUnless(os.path.isfile(os.path.join(path, 'compoze')))
 
-    # TODO
-    #def test_download_distributions_w_missing_dist(self):
-    #def test_download_distributions_w_duplicated_dists(self):
-    #def test_download_distributions_w_find_links(self):
-    #def test_download_distributions_w_find_links_w_duplicated_dists(self):
-    #def test_download_distributions_w_verbose(self):
+    def test_download_distributions_w_missing_dist(self):
+        import os
+        from pkg_resources import Requirement
+        target, path = self._makeDirs()
+        rqmt = Requirement.parse('compoze')
+        cheeseshop = self._makeIndex()
+        local = self._makeIndex(target=target)
+        def _factory(index_url, search_path=None):
+            if index_url == 'http://pypi.python.org/simple':
+                assert search_path is None
+                return cheeseshop
+            if index_url ==  target:
+                assert search_path is ()
+                return local
+            raise ValueError(index_url)
+        fetcher = self._makeOne('--quiet', '--path=%s' % path, 'compoze')
+        fetcher.index_factory = _factory
+        fetcher.tmpdir = target
+
+        fetcher.download_distributions()
+
+        self.assertEqual(cheeseshop._fetched_with,
+                         [(rqmt, target, False, True, False)])
+
+        self.assertEqual(local._fetched_with,
+                         [(rqmt, target, True, False, False)])
+
+        self.failIf(os.path.isfile(os.path.join(path, 'compoze')))
+
+    def test_download_distributions_w_dist_on_both_indexes(self):
+        import os
+        from pkg_resources import Requirement
+        target, path = self._makeDirs()
+        rqmt = Requirement.parse('compoze')
+        cheeseshop = self._makeIndex(rqmt)
+        other = self._makeIndex(rqmt)
+        local = self._makeIndex(rqmt, target=target)
+        def _factory(index_url, search_path=None):
+            if index_url == 'http://pypi.python.org/simple':
+                assert search_path is None
+                return cheeseshop
+            if index_url == 'http://example.com/simple':
+                assert search_path is None
+                return other
+            if index_url ==  target:
+                assert search_path is ()
+                return local
+            raise ValueError(index_url)
+        fetcher = self._makeOne('--quiet', '--path=%s' % path,
+                                '--index=http://pypi.python.org/simple',
+                                '--index=http://example.com/simple',
+                                'compoze')
+        fetcher.index_factory = _factory
+        fetcher.tmpdir = target
+
+        fetcher.download_distributions()
+
+        self.assertEqual(cheeseshop._fetched_with,
+                         [(rqmt, target, False, True, False)])
+
+        self.assertEqual(other._fetched_with, [])
+
+        self.assertEqual(local._fetched_with,
+                         [(rqmt, target, True, False, False)])
+
+        self.failUnless(os.path.isfile(os.path.join(path, 'compoze')))
+
+    def test_download_distributions_w_dist_not_on_first_index(self):
+        import os
+        from pkg_resources import Requirement
+        target, path = self._makeDirs()
+        rqmt = Requirement.parse('compoze')
+        cheeseshop = self._makeIndex()
+        other = self._makeIndex(rqmt)
+        local = self._makeIndex(rqmt, target=target)
+        def _factory(index_url, search_path=None):
+            if index_url == 'http://pypi.python.org/simple':
+                assert search_path is None
+                return cheeseshop
+            if index_url == 'http://example.com/simple':
+                assert search_path is None
+                return other
+            if index_url ==  target:
+                assert search_path is ()
+                return local
+            raise ValueError(index_url)
+        fetcher = self._makeOne('--quiet', '--path=%s' % path,
+                                '--index=http://pypi.python.org/simple',
+                                '--index=http://example.com/simple',
+                                'compoze')
+        fetcher.index_factory = _factory
+        fetcher.tmpdir = target
+
+        fetcher.download_distributions()
+
+        self.assertEqual(cheeseshop._fetched_with,
+                         [(rqmt, target, False, True, False)])
+
+        self.assertEqual(other._fetched_with,
+                         [(rqmt, target, False, True, False)])
+
+        self.assertEqual(local._fetched_with,
+                         [(rqmt, target, True, False, False)])
+
+        self.failUnless(os.path.isfile(os.path.join(path, 'compoze')))
+
+    def test_download_distributions_w_find_links_dist_in_index(self):
+        import os
+        from pkg_resources import Requirement
+        target, path = self._makeDirs()
+        rqmt = Requirement.parse('compoze')
+        cheeseshop = self._makeIndex(rqmt)
+        local = self._makeIndex(rqmt, target=target)
+        findlinks = self._makeIndex()
+        def _factory(index_url=None, search_path=None):
+            if index_url == 'http://pypi.python.org/simple':
+                assert search_path is None
+                return cheeseshop
+            if index_url ==  target:
+                assert search_path is ()
+                return local
+            if index_url is None:
+                assert search_path is None
+                return findlinks
+            raise ValueError(index_url)
+        fetcher = self._makeOne('--quiet', '--path=%s' % path,
+                                '--find-link=http://example.com/',
+                                'compoze')
+        fetcher.index_factory = _factory
+        fetcher.tmpdir = target
+
+        fetcher.download_distributions()
+
+        self.assertEqual(cheeseshop._fetched_with,
+                         [(rqmt, target, False, True, False)])
+
+        self.assertEqual(findlinks._fetched_with, [])
+        self.assertEqual(findlinks._find_links, ['http://example.com/'])
+
+        self.assertEqual(local._fetched_with,
+                         [(rqmt, target, True, False, False)])
+
+        self.failUnless(os.path.isfile(os.path.join(path, 'compoze')))
+
+    def test_download_distributions_w_find_links_dist_not_in_index(self):
+        import os
+        from pkg_resources import Requirement
+        target, path = self._makeDirs()
+        rqmt = Requirement.parse('compoze')
+        cheeseshop = self._makeIndex()
+        local = self._makeIndex(rqmt, target=target)
+        findlinks = self._makeIndex(rqmt)
+        def _factory(index_url=None, search_path=None):
+            if index_url == 'http://pypi.python.org/simple':
+                assert search_path is None
+                return cheeseshop
+            if index_url ==  target:
+                assert search_path is ()
+                return local
+            if index_url is None:
+                assert search_path is None
+                return findlinks
+            raise ValueError(index_url)
+        fetcher = self._makeOne('--quiet', '--path=%s' % path,
+                                '--find-link=http://example.com/',
+                                'compoze')
+        fetcher.index_factory = _factory
+        fetcher.tmpdir = target
+
+        fetcher.download_distributions()
+
+        self.assertEqual(cheeseshop._fetched_with,
+                         [(rqmt, target, False, True, False)])
+
+        self.assertEqual(findlinks._fetched_with,
+                         [(rqmt, target, False, True, False)])
+        self.assertEqual(findlinks._find_links, ['http://example.com/'])
+
+        self.assertEqual(local._fetched_with,
+                         [(rqmt, target, True, False, False)])
+
+        self.failUnless(os.path.isfile(os.path.join(path, 'compoze')))
 
 
 class DummyDistribution(object):
@@ -225,9 +411,13 @@ class DummyIndex:
     def __init__(self, mapping):
         self._mapping = mapping
         self._fetched_with = []
+        self._find_links = []
 
     def fetch_distribution(self, rqmt, target_dir,
                            force_scan=False, source=False, develop_ok=False):
         self._fetched_with.append(
                     (rqmt, target_dir, force_scan, source, develop_ok))
         return self._mapping.get(rqmt)
+
+    def add_find_links(self, links):
+        self._find_links.extend(links)
