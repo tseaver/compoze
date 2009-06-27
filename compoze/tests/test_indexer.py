@@ -197,6 +197,9 @@ class IndexerTests(unittest.TestCase):
         values.path = '.'
         return self._getTargetClass()(values, *args)
 
+    def test_ctor_invalid_path(self):
+        self.assertRaises(ValueError, self._makeOne, '--path=/nonesuch')
+
     def test__extractNameVersion_non_archive(self):
         import tempfile
         non_archive = tempfile.NamedTemporaryFile()
