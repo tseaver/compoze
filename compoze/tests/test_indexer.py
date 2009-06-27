@@ -260,7 +260,10 @@ class IndexerTests(unittest.TestCase):
         filename = os.path.join(tmpdir, 'testpackage-3.14.tar.gz')
         archive = tarfile.TarFile(filename, mode='w')
         buffer = StringIO.StringIO()
-        buffer.writelines(['Name: testpackage\n', 'Version: 3.14\n'])
+        buffer.writelines(['Metadata-Version: 1.0\n',
+                           'Name: testpackage\n',
+                           'Version: 3.14\n',
+                          ])
         size = buffer.tell()
         buffer.seek(0)
         info = tarfile.TarInfo('PKG-INFO')
@@ -310,10 +313,13 @@ class IndexerTests(unittest.TestCase):
         tfile = tempfile.NamedTemporaryFile(suffix='.tgz')
         archive = tarfile.TarFile(fileobj=tfile, mode='w')
         buffer = StringIO.StringIO()
-        buffer.writelines(['Name: testpackage\n', 'Version: 3.14\n'])
+        buffer.writelines(['Metadata-Version: 1.0\n',
+                           'Name: testpackage\n',
+                           'Version: 3.14\n',
+                          ])
         size = buffer.tell()
         buffer.seek(0)
-        info = tarfile.TarInfo('PKG-INFO')
+        info = tarfile.TarInfo('testpackage.egg-info/PKG-INFO')
         info.size = size
         archive.addfile(info, buffer)
         archive.close()
@@ -329,10 +335,13 @@ class IndexerTests(unittest.TestCase):
         tfile = tempfile.NamedTemporaryFile(suffix='.tgz')
         archive = tarfile.TarFile(fileobj=tfile, mode='w')
         buffer = StringIO.StringIO()
-        buffer.writelines(['Version: 3.14\n', 'Name: testpackage\n'])
+        buffer.writelines(['Metadata-Version: 1.0\n',
+                           'Version: 3.14\n',
+                           'Name: testpackage\n',
+                          ])
         size = buffer.tell()
         buffer.seek(0)
-        info = tarfile.TarInfo('PKG-INFO')
+        info = tarfile.TarInfo('testpackage.egg-info/PKG-INFO')
         info.size = size
         archive.addfile(info, buffer)
         archive.close()
@@ -340,7 +349,7 @@ class IndexerTests(unittest.TestCase):
         self.assertEqual(tested._extractNameVersion(tfile.name),
                          ('testpackage', '3.14'))
 
-    def test__extractNameVersion_archive_w_setup(self):
+    def test__extractNameVersion_archive_w_nested_setup(self):
         import StringIO
         import tarfile
         import tempfile
@@ -356,6 +365,29 @@ class IndexerTests(unittest.TestCase):
         size = buffer.tell()
         buffer.seek(0)
         finfo = tarfile.TarInfo('testpackage/setup.py')
+        finfo.size = size
+        archive.addfile(finfo, buffer)
+        archive.close()
+        tfile.flush()
+        self.assertEqual(tested._extractNameVersion(tfile.name),
+                         ('testpackage', '3.14'))
+
+    def test__extractNameVersion_archive_w_setup_at_root(self):
+        import StringIO
+        import tarfile
+        import tempfile
+        tested = self._makeOne()
+        tfile = tempfile.NamedTemporaryFile(suffix='.tgz')
+        archive = tarfile.TarFile(fileobj=tfile, mode='w')
+        dinfo = tarfile.TarInfo('testpackage')
+        dinfo.type = tarfile.DIRTYPE
+        dinfo.mode = 0777
+        archive.addfile(dinfo)
+        buffer = StringIO.StringIO()
+        buffer.write(_DUMMY_SETUP)
+        size = buffer.tell()
+        buffer.seek(0)
+        finfo = tarfile.TarInfo('setup.py')
         finfo.size = size
         archive.addfile(finfo, buffer)
         archive.close()

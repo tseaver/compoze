@@ -44,12 +44,12 @@ setup(name='compoze',
       license="BSD-derived (http://www.repoze.org/LICENSE.txt)",
       packages=find_packages(),
       include_package_data=True,
-      #namespace_packages=['repoze'],
       zip_safe=False,
       tests_require = [
                ],
       install_requires=[
                'setuptools >= 0.6c7',
+               'pkginfo',
                ],
       test_suite="compoze.tests",
       entry_points = {

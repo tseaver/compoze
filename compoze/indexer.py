@@ -3,6 +3,7 @@
 """
 import optparse
 import os
+import pkginfo
 import shutil
 import subprocess
 import sys
@@ -216,54 +217,48 @@ class Indexer:
         # -> (project, version)
         self.blather('Parsing: %s' % filename)
 
+        md = pkginfo.utils.get_metadata(filename)
+        if md is not None:
+            return md.name, md.version
+
+        # no PKG-INFO found, do it the hard way.
         archive = _getArchiver(filename)
         if archive is None:
             self.blather('Unknown archive -- ignored')
-            return None, None
 
-        try:
-            names = archive.names()
-            has_setup = False
-            for name in names:
+        else:
+            try:
+                names = archive.names()
+                setup = None
+                prefix = ''
+                for name in names:
+                    if name == 'setup.py':
+                        setup = name
+                        break
+                    elif name.endswith('/setup.py'):
+                        setup = name
+                        prefix = os.path.dirname(setup)
+                        break
 
-                if name.endswith('PKG-INFO'):
+                if setup is not None:
+                    self.blather('Running setup: %s' % setup)
+                    tmpdir = tempfile.mkdtemp()
+                    try:
+                        archive.extract(setup, tmpdir)
+                        command = ('cd %s/%s && %s setup.py --name --version'
+                                    % (tmpdir, prefix, sys.executable))
+                        popen = subprocess.Popen(command,
+                                                stdout=subprocess.PIPE,
+                                                shell=True,
+                                                )
+                        output = popen.communicate()[0]
+                        return tuple(output.splitlines()[:2])
+                    finally:
+                        shutil.rmtree(tmpdir)
+            finally:
+                archive.close()
 
-                    project, version = None, None
-
-                    for line in archive.lines(name):
-                        key, value = line.split(':', 1)
-
-                        if key == 'Name':
-                            project = value.strip()
-                            if version is not None:
-                                return project, version
-
-                        elif key == 'Version':
-                            version = value.strip()
-                            if project is not None:
-                                return project, version
-                elif name.endswith('/setup.py'):
-                    has_setup = True
-
-            # no PKG-INFO found, do it the hard way.
-            if has_setup:
-                tmpdir = tempfile.mkdtemp()
-                try:
-                    for name in names:
-                        archive.extract(name, tmpdir)
-                    command = ('cd %s/%s && %s setup.py --name --version'
-                                % (tmpdir, names[0], sys.executable))
-                    popen = subprocess.Popen(command,
-                                             stdout=subprocess.PIPE,
-                                             shell=True,
-                                            )
-                    output = popen.communicate()[0]
-                    return tuple(output.splitlines()[:2])
-                finally:
-                    shutil.rmtree(tmpdir)
-            return None, None
-        finally:
-            archive.close()
+        return None, None
 
 def _print(text): #pragma NO COVERAGE
     print text
