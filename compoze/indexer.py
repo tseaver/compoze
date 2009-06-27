@@ -11,7 +11,6 @@ import tempfile
 import zipfile
 import StringIO
 
-from setuptools.package_index import PackageIndex
 
 class TarArchive:
     def __init__(self, filename):
@@ -54,11 +53,7 @@ class ZipArchive:
         if not os.path.exists(t):
             os.makedirs(t)
 
-        if name.endswith('/'):
-            fn = os.path.join(tempdir, name[:-1])
-            if not os.path.exists(fn):
-                os.makedirs(fn)
-        else:
+        if not name.endswith('/'):
             data = self.zipf.read(name)
             fn = os.path.join(tempdir, name)
             f = open(fn, 'wb')
