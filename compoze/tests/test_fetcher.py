@@ -112,7 +112,7 @@ class FetcherTests(unittest.TestCase):
         fetcher = self._makeOne('--fetch-site-packages', logger=self)
         self.failUnless(fetcher._logger is self)
 
-    def test_ctor_default_logger(self):
+    def test_ctor_index_factory(self):
         from compoze.fetcher import CompozePackageIndex
         fetcher = self._makeOne('--fetch-site-packages')
         self.failUnless(fetcher.index_factory is CompozePackageIndex)
