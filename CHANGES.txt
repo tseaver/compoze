@@ -6,8 +6,8 @@ After compoze 0.2
 
 - Switched to using ``pkginfo`` to parse package information.
 
-- Added ``pool`` command which moves all archives in the currently directory
-  to a common pool directory and symlinks them back
+- Added ``pool`` command which moves all archives in the current directory
+  to a common pool directory and symlinks them back.
 
 - Added ``show`` command, which displays locations for one or more
   requirements across a set of indexes.
