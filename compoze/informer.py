@@ -6,11 +6,12 @@ import pkg_resources
 import sys
 import StringIO
 
-from setuptools.package_index import PackageIndex
+from compoze.index import CompozePackageIndex
 
 class Informer:
+    index_factory = CompozePackageIndex # allow shimming for testing
 
-    def __init__(self, global_options, *argv):
+    def __init__(self, global_options, *argv, **kw):
     
         argv = list(argv)
         parser = optparse.OptionParser(
@@ -79,35 +80,32 @@ class Informer:
 
         self.options = options
         self._expandRequirements(args)
+        self._logger = kw.get('logger', _print)
 
-    def __call__(self):
-
-        self.show_distributions()
+    def blather(self, text):
+        if self.options.verbose:
+            self._logger(text)
 
     def show_distributions(self):
 
-        # First, collect best sdist candidate for the requirment from each 
-        # index into a self.tmpdir
-        # XXX ignore same-name problem for now
-
         for index_url in self.options.index_urls:
-            self._blather('=' * 50)
-            self._blather('Package index: %s' % index_url)
-            self._blather('=' * 50)
-            index = PackageIndex(index_url=index_url)
+            self.blather('=' * 50)
+            self.blather('Package index: %s' % index_url)
+            self.blather('=' * 50)
+            index = self.index_factory(index_url=index_url)
             index.prescan()
 
             for rqmt in self.requirements:
                 index.find_packages(rqmt)
-                self._blather('Candidates: %s' % rqmt)
+                self.blather('Candidates: %s' % rqmt)
                 for dist in self._findAll(index, rqmt):
-                    self._blather('%s: %s' % (dist, dist.location))
+                    self.blather('%s: %s' % (dist.name, dist.location))
 
-        self._blather('=' * 50)
+        self.blather('=' * 50)
 
-    def _blather(self, text):
-        if self.options.verbose:
-            print text
+    def __call__(self): #pragma NO COVERAGE
+
+        self.show_distributions()
 
     def _expandRequirements(self, args):
         args = list(args)
@@ -121,23 +119,26 @@ class Informer:
         skipped = {}
         for dist in index[rqmt.key]:
 
-            if (dist.precedence==pkg_resources.DEVELOP_DIST
+            if (dist.precedence == pkg_resources.DEVELOP_DIST
                     and not self.options.develop_ok):
                 if dist not in skipped:
-                    self._blather("Skipping development or system egg: %s"
+                    self.blather("Skipping development or system egg: %s"
                                    % dist)
                     skipped[dist] = 1
-                continue
+            else:
+                if (dist in rqmt and
+                     (dist.precedence <= pkg_resources.SOURCE_DIST
+                                    or not self.options.source_only)):
+                    yield dist
 
-            if dist in rqmt and (dist.precedence <= pkg_resources.SOURCE_DIST
-                                  or not self.options.source_only):
-                yield dist
-
-                if self.options.only_best:
-                    break
+                    if self.options.only_best:
+                        break
 
 
-def main():
+def _print(text): #pragma NO COVERAGE
+    print text
+
+def main(): #pragma NO COVERAGE
     try:
         informer = Informer(sys.argv[1:])
     except ValueError, e:
@@ -145,5 +146,5 @@ def main():
         sys.exit(1)
     informer()
 
-if __name__ == '__main__':
+if __name__ == '__main__': #pragma NO COVERAGE
     main()

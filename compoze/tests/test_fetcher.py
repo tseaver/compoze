@@ -362,9 +362,10 @@ class FetcherTests(unittest.TestCase):
 
 class DummyDistribution(object):
 
-    def __init__(self, name, tmpdir=None):
+    def __init__(self, name, tmpdir=None, precedence=None):
         self.name = name
         self.tmpdir = tmpdir
+        self.precedence = precedence
 
     def _get_location(self):
         import os
