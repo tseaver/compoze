@@ -92,6 +92,34 @@ class CompozerTests(unittest.TestCase, _CommandFaker):
         self.failUnless(isinstance(command, Other))
         self.assertEqual(command.args, ('qux',))
 
+    def test_ctor_default_options(self):
+        class Dummy:
+            def __init__(self, options, *args):
+                self.options = options
+                self.args = args
+        self._updateCommands(dummy=Dummy)
+        compozer = self._makeOne(argv=['dummy'])
+        self.failUnless(compozer.options.verbose)
+        self.assertEqual(compozer.options.path, '.')
+
+    def test_ctor_quiet(self):
+        class Dummy:
+            def __init__(self, options, *args):
+                self.options = options
+                self.args = args
+        self._updateCommands(dummy=Dummy)
+        compozer = self._makeOne(argv=['--quiet', 'dummy'])
+        self.failIf(compozer.options.verbose)
+
+    def test_ctor_verbose(self):
+        class Dummy:
+            def __init__(self, options, *args):
+                self.options = options
+                self.args = args
+        self._updateCommands(dummy=Dummy)
+        compozer = self._makeOne(argv=['--verbose', 'dummy'])
+        self.failUnless(compozer.options.verbose)
+
     def test_ctor_helpcommands(self):
         class Dummy:
             """Dummy command"""
