@@ -165,6 +165,30 @@ class CompozerTests(unittest.TestCase, _CommandFaker):
         compozer.error('foo')
         self.assertEqual(logged, ['foo'])
 
+    def test_error_not_verbose(self):
+        class Dummy:
+            def __init__(self, options, *args):
+                self.options = options
+                self.args = args
+        self._updateCommands(True, dummy=Dummy)
+        logged = []
+        compozer = self._makeOne(argv=['--verbose', 'dummy'],
+                                 logger=logged.append)
+        compozer.error('foo')
+        self.assertEqual(logged, ['foo'])
+
+    def test_error_verbose(self):
+        class Dummy:
+            def __init__(self, options, *args):
+                self.options = options
+                self.args = args
+        self._updateCommands(True, dummy=Dummy)
+        logged = []
+        compozer = self._makeOne(argv=['--verbose', 'dummy'],
+                                 logger=logged.append)
+        compozer.error('foo')
+        self.assertEqual(logged, ['foo'])
+
     def test_blather_not_verbose(self):
         class Dummy:
             def __init__(self, options, *args):
