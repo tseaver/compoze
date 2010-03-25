@@ -17,7 +17,7 @@ Glossary
         A web page listing projects known to the index, where each
         :term:`project` has a separate URL listing distributions (source
         or binary) in the index for each :term:`release` of the
-        :term:`project'.  This is the format of the ``simple`` API
+        :term:`project`.  This is the format of the ``simple`` API
         of the Python Package Index:  http://pypi.python.org/simple/
 
    project
@@ -30,7 +30,7 @@ Glossary
         normally as one or more distributions (source or binary).
 
    requirement
-        A string specifying a :mod:`distutils: :term:`project` name.
+        A string specifying a :mod:`distutils` :term:`project` name.
         Can be optionally restricted to a given version or range of versions.
 
    source distribution
