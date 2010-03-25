@@ -21,7 +21,7 @@ class Pooler(object):
     def __init__(self, global_options, *argv, **kw):
 
         argv = list(argv)
-        parser = self.parser = optparse.OptionParser(
+        parser = optparse.OptionParser(
             usage="%prog pool [OPTIONS] pool_dir\n\n  " +
                    self.__doc__.strip())
 

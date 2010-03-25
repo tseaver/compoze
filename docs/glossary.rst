@@ -13,10 +13,21 @@ Glossary
         added to Python's system path using the
         :command:`python setup.py develop` command.
 
+   package index
+        A web page listing projects known to the index, where each
+        :term:`project` has a separate URL listing distributions (source
+        or binary) in the index for each :term:`release` of the
+        :term:`project'.  This is the format of the ``simple`` API
+        of the Python Package Index:  http://pypi.python.org/simple/
+
    project
         A named collection of releases of a given Python library or
         application, packaged using :mod:`distutils` or one of its
         derivatives.
+
+   release
+        A numbered version of a :term:`project` released as software,
+        normally as one or more distributions (source or binary).
 
    requirement
         A string specifying a :mod:`distutils: :term:`project` name.

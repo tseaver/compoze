@@ -1,6 +1,11 @@
 compoze Changelog
 =================
 
+After compoze 0.3
+-----------------
+
+- Further documentation improvements.
+
 compoze 0.3 (2010-03-25)
 ------------------------
 

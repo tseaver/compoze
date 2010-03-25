@@ -17,6 +17,10 @@ Global options:
 
 .. program:: compoze
 
+.. cmdoption:: -h, --help
+
+   Show usage and exit.
+
 .. cmdoption:: -s, --help-commands
 
    Print help on the available sub-commands.
@@ -29,9 +33,9 @@ Global options:
 
    Print more informative output.
 
-.. cmdoption:: -p, --path
+.. cmdoption:: -p PATH, --path=PATH
 
-   Default path for subcommand target.
+   Use ``PATH`` as the default path for subcommands.
 
 
 .. _compoze_fetch_options:
@@ -49,32 +53,9 @@ Options:
 
 .. program:: compoze fetch
 
-.. cmdoption:: -p, --path=DIRECTORY
+.. cmdoption:: -h, --help
 
-   Fetch :term:`source distribution` archives into this directory
-   (overrides global option).
-
-.. cmdoption:: -u, --index-url
-
-   Index from which to retrieve any :term:`source distribution` archives
-   (may be repeated).
-
-.. cmdoption:: -l, --find-link
-
-   Extra URL to search for links to :term:`source distribution` archives
-   (may be repeated).
-
-.. cmdoption:: -f, --fetch-site-packages
-
-   In addition to any :term:`requirement` (s) specified on the command
-   line, fetch a :term:`source distribution` archives for each
-   :term:`project` installed in the current Python environment.
-
-.. cmdoption:: -b, --include-binary-eggs
-
-   Search :term:`binary distribution` archives in addition to
-   :term:`source distribution` archives for each :term:`requirement`.
-   Disabled by default.
+   Show usage and exit.
 
 .. cmdoption:: -q, --quiet
 
@@ -83,6 +64,34 @@ Options:
 .. cmdoption:: -v, --verbose
 
    Print more informative output (overrides global option).
+
+.. cmdoption:: -p PATH, --path=PATH
+
+   Fetch :term:`source distribution` archives into ``PATH``
+   (overrides global option).
+
+.. cmdoption:: -u INDEX_URL, --index-url=INDEX_URL
+
+   Add ``INDEX_URL`` to the list of indexes to consult when searching for
+   a :term:`source distribution`.  May be repeated.  If not passed, default
+   to searching PyPI (http://pypi.python.org/simple).
+
+.. cmdoption:: -l FIND_LINKS_URL, --find-link=FIND_LINKS_URL
+
+   Add ``FIND_LINKS_URL`` to the list of pages in which to search for links
+   to :term:`source distribution` archives.  May be repeated.
+
+.. cmdoption:: -f, --fetch-site-packages
+
+   In addition to any :term:`requirement` specified on the command
+   line, fetch :term:`source distribution` archives for each
+   :term:`project` installed in the current Python environment.
+
+.. cmdoption:: -b, --include-binary-eggs
+
+   Search :term:`binary distribution` archives in addition to
+   :term:`source distribution` archives for each :term:`requirement`.
+   Disabled by default.
 
 .. cmdoption:: -k, --keep-tempdir
 
@@ -105,14 +114,9 @@ Options:
 
 .. program:: compoze index
 
-.. cmdoption:: -p, --path=DIRECTORY
+.. cmdoption:: -h, --help
 
-   Index :term:`source distribution` archives in this directory
-   (overrides global option).
-
-.. cmdoption:: -n, --index-name
-
-   Override the name of the index subdirectory.  (Defaults to ``simple``).
+   Show usage and exit.
 
 .. cmdoption:: -q, --quiet
 
@@ -121,6 +125,16 @@ Options:
 .. cmdoption:: -v, --verbose
 
    Print more informative output (overrides global option).
+
+.. cmdoption:: -p PATH, --path=PATH
+
+   Index :term:`source distribution` archives in ``PATH``.
+   (overrides global option).
+
+.. cmdoption:: -n INDEX_NAME, --index-name=INDEX_NAME
+
+   Use ``INDEX_NAME`` as the name of the index subdirectory inside the
+   directory being indexed.  Defaults to "simple".
 
 .. cmdoption:: -k, --keep-tempdir
 
@@ -143,6 +157,10 @@ Options:
 
 .. program:: compoze pool
 
+.. cmdoption:: -h, --help
+
+   Show usage and exit.
+
 .. cmdoption:: -q, --quiet
 
    Suppress all non-essential output (overrides global option).
@@ -151,10 +169,10 @@ Options:
 
    Print more informative output (overrides global option).
 
-.. cmdoption:: -p, --path=DIRECTORY
+.. cmdoption:: -p PATH, --path=PATH
 
-   Move :term:`source distribution` archives from this directory to the
-   pool (overrides global option).
+   Move :term:`source distribution` archives from ``PATH`` into ``POOL_DIR``,
+   and create symlinks in ``PATH`` (overrides global option).
 
 
 .. _compoze_show_options:
@@ -172,14 +190,27 @@ Options:
 
 .. program:: compoze show
 
-.. cmdoption:: -u, --index-url
+.. cmdoption:: -h, --help
 
-   Index from which to retrieve any :term:`source distribution` archives
-   (may be repeated).
+   Show usage and exit.
+
+.. cmdoption:: -q, --quiet
+
+   Suppress all non-essential output (overrides global option).
+
+.. cmdoption:: -v, --verbose
+
+   Print more informative output (overrides global option).
+
+.. cmdoption:: -u INDEX_URL, --index-url=INDEX_URL
+
+   Add ``INDEX_URL`` to the list of indexes to consult when searching for
+   a :term:`source distribution`.  May be repeated.  If not passed, default
+   to searching PyPI (http://pypi.python.org/simple).
 
 .. cmdoption:: -f, --fetch-site-packages
 
-   In addition to any :term:`requirement` (s) specified on the command
+   In addition to any :term:`requirement` specified on the command
    line, show information about :term:`source distribution` archives for
    each :term:`project` installed in the current Python environment.
 
@@ -187,7 +218,7 @@ Options:
 
    Show information only for the "best" :term:`source distribution`
    for each :term:`requirement`.  By default, show information for
-   any :term:`source distribution` found for each requirement.
+   each :term:`source distribution` matching a given :term:`requirement`.
 
 .. cmdoption:: -b, --include-binary-eggs
 
@@ -200,11 +231,3 @@ Options:
    Search :term:`development egg` projects in addition to
    :term:`source distribution` archives for each :term:`requirement`.
    Disabled by default.
-
-.. cmdoption:: -q, --quiet
-
-   Suppress all non-essential output (overrides global option).
-
-.. cmdoption:: -v, --verbose
-
-   Print more informative output (overrides global option).

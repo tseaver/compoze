@@ -15,7 +15,21 @@ class Informer:
             usage="%prog [OPTIONS] app_egg_name [other_egg_name]*")
 
         parser.add_option(
+            '-q', '--quiet',
+            action='store_false',
+            dest='verbose',
+            help="Run quietly")
+
+        parser.add_option(
+            '-v', '--verbose',
+            action='store_true',
+            dest='verbose',
+            default=global_options.verbose,
+            help="Show progress")
+
+        parser.add_option(
             '-u', '--index-url',
+            metavar='INDEX_URL',
             action='append',
             dest='index_urls',
             default=[],
@@ -48,19 +62,6 @@ class Informer:
             dest='develop_ok',
             default=False,
             help="Include development distributions")
-
-        parser.add_option(
-            '-q', '--quiet',
-            action='store_false',
-            dest='verbose',
-            help="Run quietly")
-
-        parser.add_option(
-            '-v', '--verbose',
-            action='store_true',
-            dest='verbose',
-            default=global_options.verbose,
-            help="Show progress")
 
         options, args = parser.parse_args(argv)
 

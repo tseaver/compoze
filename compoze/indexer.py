@@ -84,6 +84,19 @@ class Indexer:
             usage="%prog [OPTIONS] app_egg_name [other_egg_name]*")
 
         parser.add_option(
+            '-q', '--quiet',
+            action='store_false',
+            dest='verbose',
+            help="Run quietly")
+
+        parser.add_option(
+            '-v', '--verbose',
+            action='store_true',
+            dest='verbose',
+            default=global_options.verbose,
+            help="Show progress")
+
+        parser.add_option(
             '-p', '--path',
             action='store',
             dest='path',
@@ -96,19 +109,6 @@ class Indexer:
             dest='index_name',
             default='simple',
             help="Specify the name of the index subdirectory")
-
-        parser.add_option(
-            '-q', '--quiet',
-            action='store_false',
-            dest='verbose',
-            help="Run quietly")
-
-        parser.add_option(
-            '-v', '--verbose',
-            action='store_true',
-            dest='verbose',
-            default=global_options.verbose,
-            help="Show progress")
 
         parser.add_option(
             '-k', '--keep-tempdir',

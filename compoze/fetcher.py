@@ -17,7 +17,20 @@ class Fetcher:
     def __init__(self, global_options, *argv, **kw):
         argv = list(argv)
         parser = optparse.OptionParser(
-            usage="%prog [OPTIONS] app_egg_name [other_egg_name]*")
+            usage="%prog [OPTIONS] [REQUIREMENT]*")
+
+        parser.add_option(
+            '-q', '--quiet',
+            action='store_false',
+            dest='verbose',
+            help="Run quietly")
+
+        parser.add_option(
+            '-v', '--verbose',
+            action='store_true',
+            dest='verbose',
+            default=global_options.verbose,
+            help="Show progress")
 
         parser.add_option(
             '-p', '--path',
@@ -28,6 +41,7 @@ class Fetcher:
 
         parser.add_option(
             '-u', '--index-url',
+            metavar='INDEX_URL',
             action='append',
             dest='index_urls',
             default=[],
@@ -35,6 +49,7 @@ class Fetcher:
 
         parser.add_option(
             '-l', '--find-link',
+            metavar='FIND_LINKS_URL',
             action='append',
             dest='find_links',
             default=[],
@@ -53,19 +68,6 @@ class Fetcher:
             dest='source_only',
             default=True,
             help="Include binary distributions")
-
-        parser.add_option(
-            '-q', '--quiet',
-            action='store_false',
-            dest='verbose',
-            help="Run quietly")
-
-        parser.add_option(
-            '-v', '--verbose',
-            action='store_true',
-            dest='verbose',
-            default=global_options.verbose,
-            help="Show progress")
 
         parser.add_option(
             '-k', '--keep-tempdir',

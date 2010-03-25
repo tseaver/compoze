@@ -2,26 +2,30 @@ Querying Distributions
 ======================
 
 The :command:`compoze show` command displays information about
-any :term:`source distribution` available in a given index matching a set of
-:term:`requirement` specifications.
-
-For instance, to show information about any :term:`source distribution`
-for version 2.1 or later of :mod:`myproject`:
+any :term:`source distribution` available in a given :term:`package index`
+matching a set of :term:`requirement` specifications.
 
 .. code-block:: sh
 
-   $ bin/compoze show \
-        --index-url=http://dist.repoze.org/simple \
-        "myproject>=2.1"
+   $ bin/compoze show someproject
 
-If you do not supply an index URL, :command:`compoze show` uses the Python
-Package Index (http://pypi.python.org/pypi) by default:
+As with other tools based on :mod:`distutils`, :command:`compoze show`
+will respect any version constraint on a :term:`requirement`:
 
 .. code-block:: sh
 
-   $ bin/compoze show --path=/tmp/index someproject
+   $ bin/compoze show "someproject>=2.1"
 
-You can supply more than one index, and more than one :term:`requirement`:
+By default, :command:`compoze show` uses the ``simple`` API of the Python
+Package Index (http://pypi.python.org/simple) to find
+:term:`source distribution` archives.  You can override this default with the
+URL of a different :term:`package index`:
+
+.. code-block:: sh
+
+   $ bin/compoze show --index-url=http://dist.repoze.org/simple someproject
+
+You can supply more than one index URL, and more than one :term:`requirement`:
 
 .. code-block:: sh
 
@@ -29,10 +33,6 @@ You can supply more than one index, and more than one :term:`requirement`:
         --index-url=http://example.com/index \
         --index-url=http://another.example.com/index \
         someproject "another_project==3.2.1"
-
-
-Example: Querying already-installed projects
---------------------------------------------
 
 You can also use :command:`compoze show` to display information about any
 available :term:`source distribution` for each project already installed
@@ -42,47 +42,50 @@ in your Python's ``site-packges``:
 
    $ bin/compoze show --fetch-site-packages
 
+See :ref:`compoze_show_options` for the full command-line reference.
+
 
 Fetching Distributions
 ======================
 
 The :command:`compoze fetch` command retrieves a :term:`source distribution` 
-for each :term:`requirement` specified.
-
-For instance, to fetch a :term:`source distribution` for version 2.1 or later
-of :mod:`myproject`:
+from a :term:`package index` for each :term:`requirement` specified.
 
 .. code-block:: sh
 
-   $ bin/compoze fetch \
-        --path=/tmp/index \
-        --index-url=http://dist.repoze.org/simple \
-        "myproject>=2.1"
+   $ bin/compoze fetch someproject
 
-If you do not supply an index URL, :command:`compoze fetch` uses the ``simple``
-API (http://pypi.python.org/simple) of the Python Package Index (browseable
-at http://pypi.python.org/pypi):
+As with other tools based on :mod:`distutils`, :command:`compoze fetch`
+will respect any version constraint on a :term:`requirement`:
+
+.. code-block:: sh
+
+   $ bin/compoze fetch "someproject>=2.1"
+
+By default, :command:`compoze fetch` saves the retrieved files in the current
+directory.  You can override that default using the ``--path`` option:
 
 .. code-block:: sh
 
    $ bin/compoze fetch --path=/tmp/index someproject
+
+By default, :command:`compoze fetch` uses the ``simple`` API of the Python
+Package Index (http://pypi.python.org/simple) to find
+:term:`source distribution` archives.  You can override this default with 
+the URL of a different :term:`package index`:
+
+.. code-block:: sh
+
+   $ bin/compoze fetch --index-url=http://dist.repoze.org/simple someproject
 
 You can supply more than one index, and more than one :term:`requirement`:
 
 .. code-block:: sh
 
    $ bin/compoze fetch \
-        --path=/tmp/index \
         --index-url=http://example.com/index \
         --index-url=http://another.example.com/index \
         someproject "another_project==3.2.1"
-
-If you do not supply a path, :command:`compoze fetch` uses the current
-directory.
-
-
-Example: Fetching distributions for already-installed projects
---------------------------------------------------------------
 
 You can also use :command:`compoze fetch` to retrieve a :term:`source
 distribution` for each egg already installed in your Python's
@@ -90,7 +93,9 @@ distribution` for each egg already installed in your Python's
 
 .. code-block:: sh
 
-   $ bin/compoze fetch --path=/tmp/foo --fetch-site-packages
+   $ bin/compoze fetch --fetch-site-packages
+
+See :ref:`compoze_fetch_options` for the full command-line reference.
 
 
 Building a Package Index
@@ -101,18 +106,23 @@ in the target directory:
 
 .. code-block:: sh
 
-   $ bin/compoze index --path=/tmp/downloads
+   $ bin/compoze index
 
-By default, the index is created as a subdirectory named ``simple`` in
-the target path.  You can override that name:
+By default, :command:`compoze index` uses the current directory as the base
+directory for the index.  You can override this default using the ``--path``
+option:
 
 .. code-block:: sh
 
-   $ bin/compoze index --path=/tmp/downloads --index-name=other
+   $ bin/compoze index --path=/tmp/downloads
 
+By default, :command:`compose index` creates the index a subdirectory named
+``simple`` in the target path.  You can override that name using the
+``--index-name`` option:
 
-Example:  Creating a package index for already-installed projects
------------------------------------------------------------------
+.. code-block:: sh
+
+   $ bin/compoze index --index-name=other
 
 One common use case is to capture the "known good set" represented
 by a given Python environment.  In this case, you want both to download
@@ -124,6 +134,8 @@ and also make a package index from them:
    $ bin/compoze \
         fetch --fetch-site-packages --path kgs \
         index --path kgs
+
+See :ref:`compoze_index_options` for the full command-line reference.
 
 
 Consolidating Package Indexes
@@ -141,3 +153,5 @@ into a shared "pool" directory, leaving behind symbolic links.
    $ mkdir /path/to/pool
    $ bin/compoze pool --path=/path/to/projectA /path/to/pool
    $ bin/compoze pool --path=/path/to/projectB /path/to/pool
+
+See :ref:`compoze_pool_options` for the full command-line reference.
