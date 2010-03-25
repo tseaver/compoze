@@ -9,6 +9,7 @@ After compoze 0.3
 
 - Further documentation improvements.
 
+
 compoze 0.3 (2010-03-25)
 ------------------------
 
@@ -22,6 +23,7 @@ compoze 0.3 (2010-03-25)
 - Added ``show`` command, which displays locations for one or more
   requirements across a set of indexes.
 
+
 compoze 0.2 (2007-11-19)
 ------------------------
 
@@ -30,6 +32,7 @@ compoze 0.2 (2007-11-19)
 - Broke ``fetch`` and ``index`` out as subcommands;  other commands can
   be registered using the pkg_resources entry point group,
   ``compoze_commands``.
+
 
 compoze 0.1 (2007-11-14)
 ------------------------
