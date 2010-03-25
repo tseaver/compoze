@@ -1,6 +1,3 @@
-""" compoze index -- build a Python package index in a directory
-
-"""
 import optparse
 import os
 import pkginfo
@@ -140,7 +137,10 @@ class Indexer:
             self._logger(text)
 
     def make_index(self, path=None):
+        """ Build an index from a directory full of source distributions.
 
+        `path`, if passed, overrides the value set from the command line.
+        """
         if path is None:
             path = self.path
 
@@ -205,7 +205,8 @@ class Indexer:
         top.close()
 
     def __call__(self): #pragma NO COVERAGE
-
+        """ Call :meth:`make_index` and clean up.
+        """
         self.tmpdir = tempfile.mkdtemp(dir='.')
         try:
             self.make_index()

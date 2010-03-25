@@ -1,5 +1,7 @@
-""" compoze -- command driver
+""" Generic command line driver.
 
+Register sub-commands by querying :mod:`setuptools` entry points for the
+group ``compoze_commands``.
 """
 import optparse
 import pkg_resources
@@ -27,15 +29,20 @@ def get_description(command):
 
 
 class Compozer:
-
+    """ Driver for the :command:`compoze` command-line script. 
+    """
     def __init__(self, argv=None, logger=None):
-
-        mine = []
-        queue = [(None, mine)]
         self.commands = []
         if logger is None:
             logger = self._print
         self.logger = logger
+        self.parse_arguments(argv)
+
+    def parse_arguments(self, argv=None):
+        """ Parse subcommands and their options from an argv list.
+        """
+        mine = []
+        queue = [(None, mine)]
 
         def _recordCommand(arg):
             current, current_args = queue[-1]
@@ -106,7 +113,8 @@ class Compozer:
             raise ValueError('No commands specified')
 
     def __call__(self):
-
+        """ Invoke sub-commands parsed by :meth:`parse_arguments`.
+        """
         for command in self.commands:
             command()
 

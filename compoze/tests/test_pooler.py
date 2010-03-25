@@ -129,16 +129,16 @@ class PoolerTests(unittest.TestCase):
         self.assertEqual(fetcher.listArchives(),
                         (['foo.tar.gz'], []))
 
-    def test_moveToPool_no_archives_in_release_dir_raises(self):
+    def test_move_to_pool_no_archives_in_release_dir_raises(self):
         release_dir = self._makeTempDir()
         pool_dir = self._makeTempDir()
         fetcher = self._makeOne('--quiet',
                                 '--path=%s' % release_dir,
                                 pool_dir,
                                )
-        self.assertRaises(ValueError, fetcher.moveToPool)
+        self.assertRaises(ValueError, fetcher.move_to_pool)
 
-    def test_moveToPool_invalid_pool_dir_raises(self):
+    def test_move_to_pool_invalid_pool_dir_raises(self):
         release_dir = self._makeTempDir()
         self._makeFile(release_dir, 'foo.tar.gz')
         pool_dir = self._makeTempDir()
@@ -146,9 +146,9 @@ class PoolerTests(unittest.TestCase):
                                 '--path=%s' % release_dir,
                                 self._makeFile(pool_dir, 'foolish'),
                                )
-        self.assertRaises(ValueError, fetcher.moveToPool)
+        self.assertRaises(ValueError, fetcher.move_to_pool)
 
-    def test_moveToPool_creates_pool_dir(self):
+    def test_move_to_pool_creates_pool_dir(self):
         import os
         release_dir = self._makeTempDir()
         source = self._makeFile(release_dir, 'foo.tar.gz')
@@ -158,13 +158,13 @@ class PoolerTests(unittest.TestCase):
                                 '--path=%s' % release_dir,
                                 newdir,
                                )
-        fetcher.moveToPool()
+        fetcher.move_to_pool()
 
         self.failUnless(os.path.isdir(newdir))
         self.failUnless(os.path.isfile(os.path.join(newdir, 'foo.tar.gz')))
         self.failUnless(os.path.islink(source))
 
-    def test_moveToPool_existing_in_pool_dir(self):
+    def test_move_to_pool_existing_in_pool_dir(self):
         import os
         release_dir = self._makeTempDir()
         source = self._makeFile(release_dir, 'foo.tar.gz', 'SOURCE')
@@ -174,7 +174,7 @@ class PoolerTests(unittest.TestCase):
                                 '--path=%s' % release_dir,
                                 pool_dir,
                                )
-        fetcher.moveToPool()
+        fetcher.move_to_pool()
 
         self.failUnless(os.path.isfile(target))
         self.assertEqual(open(target).read(), 'TARGET') # not replaced

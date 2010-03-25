@@ -10,7 +10,7 @@ from compoze.index import CompozePackageIndex
 
 
 class Fetcher:
-    """Download distributions for given requirements
+    """ Download distributions for a set of :mod:`setuptools` requirements.
     """
     index_factory = CompozePackageIndex # allow shimming for testing
 
@@ -109,10 +109,12 @@ class Fetcher:
             self._logger(text)
 
     def download_distributions(self):
+        """ Collect best sdist candidate for each requirement into a tempdir.
 
-        # First, collect best sdist candidate for the requirement
-        # from each index into a self.tmpdir
+        Search each index and find-links URL provided in command options.
 
+        Report results using the logger.
+        """
         # XXX ignore same-name problem for now
 
         self.blather('=' * 50)
@@ -182,7 +184,8 @@ class Fetcher:
             self.blather('  ' + str(x))
 
     def __call__(self): #pragma NO COVERAGE
-
+        """ Call :meth:`download_distributions` and clean up.
+        """
         self.tmpdir = tempfile.mkdtemp(dir='.')
         try:
             self.download_distributions()

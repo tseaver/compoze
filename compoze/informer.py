@@ -1,6 +1,3 @@
-""" compoze show -- show info about distributions for specified requirements
-
-"""
 import optparse
 import pkg_resources
 import sys
@@ -87,7 +84,8 @@ class Informer:
             self._logger(text)
 
     def show_distributions(self):
-
+        """ Show available distributions for each index.
+        """
         for index_url in self.options.index_urls:
             self.blather('=' * 50)
             self.blather('Package index: %s' % index_url)
@@ -104,7 +102,8 @@ class Informer:
         self.blather('=' * 50)
 
     def __call__(self): #pragma NO COVERAGE
-
+        """ Delegate to :meth:`show_distributions`.
+        """
         self.show_distributions()
 
     def _expandRequirements(self, args):

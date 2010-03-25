@@ -5,10 +5,24 @@
 private / project-specific package indexes.
 
 
+Narrative Documentation
+-----------------------
+
 .. toctree::
    :maxdepth: 2
 
-   api.rst
+   narr
+
+Reference
+---------
+
+.. toctree::
+   :maxdepth: 2
+
+   install
+   commandline
+   api
+   glossary
 
 Change History
 --------------

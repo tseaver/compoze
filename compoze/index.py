@@ -2,7 +2,10 @@ from setuptools.package_index import PackageIndex
 
 
 class CompozePackageIndex(PackageIndex):
+    """ Override logging of :class:`setuptools.package_index.PackageIndex`.
 
+    Collect logged messages, rather than spewing to :data:`sys.stdout`.
+    """
     def __init__(self, *args, **kwargs):
         PackageIndex.__init__(self, *args, **kwargs)
         self.debug_msgs = []

@@ -4,6 +4,8 @@ compoze Changelog
 After compoze 0.2
 -----------------
 
+- Added Sphinx documentation.
+
 - Switched to using ``pkginfo`` to parse package information.
 
 - Added ``pool`` command which moves all archives in the current directory

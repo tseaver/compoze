@@ -74,7 +74,11 @@ class Pooler(object):
                 all.append(filename)
         return all, pending
 
-    def moveToPool(self):
+    def move_to_pool(self):
+        """ Move archives the pool directory and create symlinks.
+
+        Ignore any archives which are already symlinks.
+        """
         all, pending = self.listArchives()
         if len(all) == 0:
             raise ValueError('No non-link archives in release dir: %s'
@@ -101,8 +105,10 @@ class Pooler(object):
         return all, pending
 
     def __call__(self): #pragma NO COVERAGE
+        """ Delegate to :meth:`move_to_pool` and report results.
+        """
         try:
-            all, pending = self.moveToPool()
+            all, pending = self.move_to_pool()
             self.blather(
                 "Updated %i out of %i archives" % (len(pending), len(all)))
         except ValueError, e:
