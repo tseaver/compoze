@@ -213,15 +213,15 @@ class InformerTests(unittest.TestCase):
 class DummyDistribution(object):
 
     def __init__(self, name, tmpdir=None, precedence=None):
-        self.name = name
+        self.project_name = name
         self.tmpdir = tmpdir
         self.precedence = precedence
 
     def _get_location(self):
         import os
-        result = os.path.join(self.tmpdir, self.name) 
+        result = os.path.join(self.tmpdir, self.project_name) 
         f = open(result, 'wb')
-        f.write(self.name)
+        f.write(self.project_name)
         f.flush()
         f.close()
         return result
@@ -233,7 +233,7 @@ class DummyIndex:
     def __init__(self, distros):
         mapping = self._mapping = {}
         for name, distro in distros:
-            found = mapping.setdefault(distro.name, [])
+            found = mapping.setdefault(distro.project_name, [])
             found.append(distro)
 
     def prescan(self):

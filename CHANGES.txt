@@ -4,6 +4,9 @@ compoze Changelog
 After compoze 0.3
 -----------------
 
+- Fix bug in ``compoze show`` under recent setuptools:
+  "AttributeError: EmptyProvider instance has no attribute 'name'".
+
 - Further documentation improvements.
 
 compoze 0.3 (2010-03-25)

@@ -98,7 +98,7 @@ class Informer:
                 index.find_packages(rqmt)
                 self.blather('Candidates: %s' % rqmt)
                 for dist in self._findAll(index, rqmt):
-                    self.blather('%s: %s' % (dist.name, dist.location))
+                    self.blather('%s: %s' % (dist.project_name, dist.location))
 
         self.blather('=' * 50)
 
