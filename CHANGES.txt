@@ -4,6 +4,9 @@ compoze Changelog
 After compoze 0.3
 -----------------
 
+- Fix bug in ``compoze fetch`` under recent setuptools:
+  "AttributeError: NoneType has no attribute 'clone'".
+
 - Fix bug in ``compoze show`` under recent setuptools:
   "AttributeError: EmptyProvider instance has no attribute 'name'".
 

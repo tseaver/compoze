@@ -106,6 +106,9 @@ class Fetcher:
         self.path = path
         self._logger = kw.get('logger', _print)
 
+    def error(self, text):
+        self._logger(text)
+
     def blather(self, text):
         if self.options.verbose:
             self._logger(text)
@@ -132,11 +135,17 @@ class Fetcher:
             for rqmt in self.requirements:
                 if results.get(rqmt, False):
                     continue
-                dist = index.fetch_distribution(rqmt, self.tmpdir,
-                                                source=source_only)
-                self.blather('  Searched for %s; found: %s'
-                              % (rqmt, (dist is not None)))
-                results[rqmt] = (dist is not None)
+                try:
+                    dist = index.fetch_distribution(rqmt, self.tmpdir,
+                                                    source=source_only)
+                except Exception, e:
+                    self.error('  Error fetching: %s' % rqmt)
+                    self.blather('    %s' % e)
+                    results[rqmt] = False
+                else:
+                    self.blather('  Searched for %s; found: %s'
+                                % (rqmt, (dist is not None)))
+                    results[rqmt] = (dist is not None)
 
         if self.options.find_links:
             self.blather('=' * 50)
@@ -166,9 +175,12 @@ class Fetcher:
                                   )
 
         for rqmt in self.requirements:
-            dist = local.fetch_distribution(rqmt,
-                                            self.tmpdir,
-                                            force_scan=True)
+            try:
+                dist = local.fetch_distribution(rqmt,
+                                                self.tmpdir,
+                                                force_scan=True)
+            except Exception:
+                dist = None
             if dist is not None:
                 shutil.copy(dist.location, self.path)
 
@@ -201,7 +213,8 @@ class Fetcher:
             for dist in pkg_resources.working_set:
                 args.append('%s == %s' % (dist.project_name, dist.version))
 
-        self.requirements = list(pkg_resources.parse_requirements(args))
+        self.requirements = [x for x in pkg_resources.parse_requirements(args)
+                                 if x.project_name != 'Python']
 
 def _print(text): #pragma NO COVERAGE
     print text

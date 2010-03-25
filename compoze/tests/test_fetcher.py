@@ -359,19 +359,94 @@ class FetcherTests(unittest.TestCase):
 
         self.failUnless(os.path.isfile(os.path.join(path, 'compoze')))
 
+    def test_download_distributions_w_cheeseshop_raises(self):
+        import os
+        from pkg_resources import Requirement
+        logged = []
+        target, path = self._makeDirs()
+        rqmt = Requirement.parse('compoze')
+        cheeseshop = self._makeIndex()
+        def _fetch_distribution(rqmt, target_dir, force_scan=False,
+                                source=False, develop_ok=False):
+            cheeseshop._fetched_with.append(
+                    (rqmt, target_dir, force_scan, source, develop_ok))
+            raise AttributeError
+        cheeseshop.fetch_distribution = _fetch_distribution
+        local = self._makeIndex(rqmt, target=target)
+        def _factory(index_url=None, search_path=None):
+            if index_url == 'http://pypi.python.org/simple':
+                assert search_path is None
+                return cheeseshop
+            if index_url ==  target:
+                assert search_path is ()
+                return local
+            raise ValueError(index_url)
+        fetcher = self._makeOne('--quiet', '--path=%s' % path,
+                                'compoze', logger=logged.append)
+        fetcher.index_factory = _factory
+        fetcher.tmpdir = target
+
+        fetcher.download_distributions()
+
+        self.assertEqual(cheeseshop._fetched_with,
+                         [(rqmt, target, False, True, False)])
+
+        self.assertEqual(local._fetched_with,
+                         [(rqmt, target, True, False, False)])
+
+        self.failUnless(os.path.isfile(os.path.join(path, 'compoze')))
+        self.assertEqual(logged, ['  Error fetching: compoze'])
+
+    def test_download_distributions_w_local_raises(self):
+        import os
+        from pkg_resources import Requirement
+        target, path = self._makeDirs()
+        rqmt = Requirement.parse('compoze')
+        cheeseshop = self._makeIndex(rqmt, target=target)
+        local = self._makeIndex()
+        def _fetch_distribution(rqmt, target_dir, force_scan=False,
+                                source=False, develop_ok=False):
+            local._fetched_with.append(
+                    (rqmt, target_dir, force_scan, source, develop_ok))
+            raise AttributeError
+        local.fetch_distribution = _fetch_distribution
+        def _factory(index_url=None, search_path=None):
+            if index_url == 'http://pypi.python.org/simple':
+                assert search_path is None
+                return cheeseshop
+            if index_url ==  target:
+                assert search_path is ()
+                return local
+            raise ValueError(index_url)
+        fetcher = self._makeOne('--quiet', '--path=%s' % path,
+                                'compoze')
+        fetcher.index_factory = _factory
+        fetcher.tmpdir = target
+
+        fetcher.download_distributions()
+
+        self.assertEqual(cheeseshop._fetched_with,
+                         [(rqmt, target, False, True, False)])
+
+        self.assertEqual(local._fetched_with,
+                         [(rqmt, target, True, False, False)])
+
+        self.failIf(os.path.isfile(os.path.join(path, 'compoze')))
+
+
 
 class DummyDistribution(object):
 
     def __init__(self, name, tmpdir=None, precedence=None):
-        self.name = name
+        self.project_name = name
         self.tmpdir = tmpdir
         self.precedence = precedence
 
     def _get_location(self):
         import os
-        result = os.path.join(self.tmpdir, self.name) 
+        result = os.path.join(self.tmpdir, self.project_name) 
         f = open(result, 'wb')
-        f.write(self.name)
+        f.write(self.project_name)
         f.flush()
         f.close()
         return result
