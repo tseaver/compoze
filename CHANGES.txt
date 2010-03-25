@@ -1,8 +1,8 @@
 compoze Changelog
 =================
 
-After compoze 0.2
------------------
+compoze 0.3 (2010-03-25)
+------------------------
 
 - Added Sphinx documentation.
 
