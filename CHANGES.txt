@@ -1,8 +1,8 @@
 compoze Changelog
 =================
 
-After compoze 0.3
------------------
+compoze 0.3.1 (2010-03-25)
+--------------------------
 
 - Fix bug in ``compoze fetch`` under recent setuptools:
   "AttributeError: NoneType has no attribute 'clone'".
