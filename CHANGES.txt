@@ -4,10 +4,11 @@ compoze Changelog
 After compoze 0.3.1 (unreleased)
 --------------------------------
 
-- Updated spelling of ``--find-link`` option to ``--find-links``.
+- Normalized options, allowing more to be set globally or in the config
+  file:  ``--index-url``, ``--find-links``, ``--fetch-site-packages``,
+  ``--include-binary-eggs``, ``--keep-tempdir``.
 
-- Added a global ``--index-url`` option to permit setting index URL(s) before
-  commands (or from the config file).
+- Updated spelling of ``--find-link`` option to ``--find-links``.
 
 - Added a global ``--config-file`` option to permit setting options in an
   INI-style config file.

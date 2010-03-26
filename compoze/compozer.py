@@ -112,6 +112,35 @@ class Compozer:
             default=[],
             help="Add a candidate index used to find distributions")
 
+        parser.add_option(
+            '-l', '--find-links',
+            metavar='FIND_LINKS_URL',
+            action='append',
+            dest='find_links',
+            default=[],
+            help="Add a find-links url")
+
+        parser.add_option(
+            '-f', '--fetch-site-packages',
+            action='store_true',
+            dest='fetch_site_packages',
+            default=False,
+            help="Fetch requirements used in site-packages")
+
+        parser.add_option(
+            '-b', '--include-binary-eggs',
+            action='store_false',
+            dest='source_only',
+            default=True,
+            help="Include binary distributions")
+
+        parser.add_option(
+            '-k', '--keep-tempdir',
+            action='store_true',
+            dest='keep_tempdir',
+            default=False,
+            help="Keep temporary directory")
+
         options, args = parser.parse_args(mine)
 
         if len(options.index_urls) == 0:
@@ -161,14 +190,26 @@ class Compozer:
             for s_name in cp.sections():
                 if s_name == 'global':
                     if cp.has_option('global', 'path'):
-                        self.options.path = cp.get('global', 'path')
+                        op.path = cp.get('global', 'path')
                     if cp.has_option('global', 'verbose'):
-                        self.options.verbose = cp.getboolean('global',
-                                                             'verbose')
-                    if cp.has_option('global', 'index_url'):
-                        text = cp.get('global', 'index_url')
+                        op.verbose = cp.getboolean('global', 'verbose')
+                    if cp.has_option('global', 'index-url'):
+                        text = cp.get('global', 'index-url')
                         urls = [x.strip() for x in text.splitlines()]
-                        self.options.index_urls = filter(None, urls)
+                        op.index_urls = filter(None, urls)
+                    if cp.has_option('global', 'find-links'):
+                        text = cp.get('global', 'find-links')
+                        urls = [x.strip() for x in text.splitlines()]
+                        op.find_links = filter(None, urls)
+                    if cp.has_option('global', 'fetch-site-packages'):
+                        op.fetch_site_packages = cp.getboolean('global',
+                                                       'fetch-site-packages')
+                    if cp.has_option('global', 'include-binary-eggs'):
+                        op.source_only = cp.getboolean('global',
+                                                       'include-binary-eggs')
+                    if cp.has_option('global', 'keep-tempdir'):
+                        op.keep_tempdir = cp.getboolean('global',
+                                                        'keep-tempdir')
                 else:
                     s_data = cf_data[s_name] = {}
                     for o_name in cp.options(s_name):

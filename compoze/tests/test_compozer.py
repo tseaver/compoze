@@ -65,6 +65,10 @@ class CompozerTests(unittest.TestCase, _CommandFaker):
         self.assertEqual(compozer.options.config_file, None)
         self.assertEqual(compozer.options.index_urls,
                          ['http://pypi.python.org/simple'])
+        self.assertEqual(compozer.options.find_links, [])
+        self.failIf(compozer.options.fetch_site_packages)
+        self.failUnless(compozer.options.source_only)
+        self.failIf(compozer.options.keep_tempdir)
 
     def test_ctor_quiet(self):
         compozer = self._makeOne(argv=['--quiet'])
@@ -89,6 +93,24 @@ class CompozerTests(unittest.TestCase, _CommandFaker):
                          ['http://example.com/simple',
                           'http://example.com/complex'])
 
+    def test_ctor_find_links(self):
+        compozer = self._makeOne(
+                        argv=['--find-links', 'http://example.com/links'])
+        self.assertEqual(compozer.options.find_links,
+                         ['http://example.com/links'])
+
+    def test_ctor_fetch_site_packages(self):
+        compozer = self._makeOne(argv=['--fetch-site-packages'])
+        self.failUnless(compozer.options.fetch_site_packages)
+
+    def test_ctor_source_only(self):
+        compozer = self._makeOne(argv=['--include-binary-eggs'])
+        self.failIf(compozer.options.source_only)
+
+    def test_ctor_keep_tempdir(self):
+        compozer = self._makeOne(argv=['--keep-tempdir'])
+        self.failUnless(compozer.options.keep_tempdir)
+
     def test_ctor_config_file(self):
         import os
         dir = self._makeTempdir()
@@ -97,9 +119,14 @@ class CompozerTests(unittest.TestCase, _CommandFaker):
         f.writelines(['[global]\n',
                       'path = /tmp/foo\n',
                       'verbose = false\n',
-                      'index_url =\n',
+                      'index-url =\n',
                       ' http://example.com/simple\n',
                       ' http://example.com/complex\n',
+                      'find-links =\n',
+                      ' http://example.com/links\n',
+                      'fetch-site-packages = true\n',
+                      'include-binary-eggs = false\n',
+                      'keep-tempdir = true\n',
                       '\n',
                       '[other]\n',
                       'foo = bar\n',
@@ -116,6 +143,11 @@ class CompozerTests(unittest.TestCase, _CommandFaker):
         self.assertEqual(compozer.options.index_urls,
                          ['http://example.com/simple',
                           'http://example.com/complex'])
+        self.assertEqual(compozer.options.find_links,
+                         ['http://example.com/links'])
+        self.failUnless(compozer.options.fetch_site_packages)
+        self.failIf(compozer.options.source_only)
+        self.failUnless(compozer.options.keep_tempdir)
 
     def test_ctor_w_help_commands(self):
         class Dummy:
