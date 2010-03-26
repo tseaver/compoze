@@ -58,61 +58,6 @@ class CompozerTests(unittest.TestCase, _CommandFaker):
         self._tempdir = tempfile.mkdtemp()
         return self._tempdir
 
-    def test_ctor_w_non_command(self):
-        class Dummy:
-            """Dummy command"""
-        class Other(Dummy):
-            """OTher command"""
-        self._updateCommands(True, dummy=Dummy, other=Other)
-        logged = []
-        compozer = self._makeOne(argv=['nonesuch'], logger=logged.append)
-        self.assertEqual(len(logged), 5)
-        self.assertEqual(logged[0], 'Valid commands are:')
-        self.assertEqual(logged[1], ' dummy')
-        self.assertEqual(logged[2], '    ' + Dummy.__doc__)
-        self.assertEqual(logged[3], ' other')
-        self.assertEqual(logged[4], '    ' + Other.__doc__)
-
-    def test_ctor_command_first_no_args(self):
-        class Dummy:
-            def __init__(self, options, *args):
-                self.options = options
-                self.args = args
-        self._updateCommands(dummy=Dummy)
-        compozer = self._makeOne(argv=['dummy'])
-        self.assertEqual(len(compozer.commands), 1)
-        command = compozer.commands[0]
-        self.failUnless(isinstance(command, Dummy))
-        self.assertEqual(command.args, ())
-
-    def test_ctor_command_first_w_args(self):
-        class Dummy:
-            def __init__(self, options, *args):
-                self.options = options
-                self.args = args
-        self._updateCommands(dummy=Dummy)
-        compozer = self._makeOne(argv=['dummy', 'bar', 'baz'])
-        self.assertEqual(len(compozer.commands), 1)
-        command = compozer.commands[0]
-        self.assertEqual(command.args, ('bar', 'baz'))
-
-    def test_ctor_command_multiple_w_args(self):
-        class Dummy:
-            def __init__(self, options, *args):
-                self.options = options
-                self.args = args
-        class Other(Dummy):
-            pass
-        self._updateCommands(dummy=Dummy, other=Other)
-        compozer = self._makeOne(argv=['dummy', 'bar', 'baz', 'other', 'qux'])
-        self.assertEqual(len(compozer.commands), 2)
-        command = compozer.commands[0]
-        self.failUnless(isinstance(command, Dummy))
-        self.assertEqual(command.args, ('bar', 'baz'))
-        command = compozer.commands[1]
-        self.failUnless(isinstance(command, Other))
-        self.assertEqual(command.args, ('qux',))
-
     def test_ctor_default_options(self):
         class Dummy:
             def __init__(self, options, *args):
@@ -184,6 +129,61 @@ class CompozerTests(unittest.TestCase, _CommandFaker):
         self.assertEqual(logged[2], '    ' + Dummy.__doc__)
         self.assertEqual(logged[3], ' other')
         self.assertEqual(logged[4], '    ' + Other.__doc__)
+
+    def test_ctor_w_non_command(self):
+        class Dummy:
+            """Dummy command"""
+        class Other(Dummy):
+            """OTher command"""
+        self._updateCommands(True, dummy=Dummy, other=Other)
+        logged = []
+        compozer = self._makeOne(argv=['nonesuch'], logger=logged.append)
+        self.assertEqual(len(logged), 5)
+        self.assertEqual(logged[0], 'Valid commands are:')
+        self.assertEqual(logged[1], ' dummy')
+        self.assertEqual(logged[2], '    ' + Dummy.__doc__)
+        self.assertEqual(logged[3], ' other')
+        self.assertEqual(logged[4], '    ' + Other.__doc__)
+
+    def test_ctor_command_first_no_args(self):
+        class Dummy:
+            def __init__(self, options, *args):
+                self.options = options
+                self.args = args
+        self._updateCommands(dummy=Dummy)
+        compozer = self._makeOne(argv=['dummy'])
+        self.assertEqual(len(compozer.commands), 1)
+        command = compozer.commands[0]
+        self.failUnless(isinstance(command, Dummy))
+        self.assertEqual(command.args, ())
+
+    def test_ctor_command_first_w_args(self):
+        class Dummy:
+            def __init__(self, options, *args):
+                self.options = options
+                self.args = args
+        self._updateCommands(dummy=Dummy)
+        compozer = self._makeOne(argv=['dummy', 'bar', 'baz'])
+        self.assertEqual(len(compozer.commands), 1)
+        command = compozer.commands[0]
+        self.assertEqual(command.args, ('bar', 'baz'))
+
+    def test_ctor_command_multiple_w_args(self):
+        class Dummy:
+            def __init__(self, options, *args):
+                self.options = options
+                self.args = args
+        class Other(Dummy):
+            pass
+        self._updateCommands(dummy=Dummy, other=Other)
+        compozer = self._makeOne(argv=['dummy', 'bar', 'baz', 'other', 'qux'])
+        self.assertEqual(len(compozer.commands), 2)
+        command = compozer.commands[0]
+        self.failUnless(isinstance(command, Dummy))
+        self.assertEqual(command.args, ('bar', 'baz'))
+        command = compozer.commands[1]
+        self.failUnless(isinstance(command, Other))
+        self.assertEqual(command.args, ('qux',))
 
     def test__call___wo_commands(self):
         from compoze.compozer import InvalidCommandLine
