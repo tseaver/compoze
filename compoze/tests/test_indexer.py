@@ -196,24 +196,46 @@ class IndexerTests(unittest.TestCase):
         from compoze.indexer import Indexer
         return Indexer
 
-    def _makeOne(self, *args, **kw):
-        logger = kw.pop('logger', None)
+    def _makeOptions(self, path='.', default_verbose=False, *args, **kw):
         from optparse import Values
         default = kw.copy()
-        default.setdefault('verbose', False)
+        default.setdefault('verbose', default_verbose)
         values = Values(default)
-        values.path = '.'
+        values.path = path
+        return values
+
+    def _makeOne(self, *args, **kw):
+        logger = kw.pop('logger', None)
+        options = self._makeOptions()
         if logger is not None:
-            return self._getTargetClass()(values, logger=logger, *args)
-        return self._getTargetClass()(values, *args)
+            return self._getTargetClass()(options, logger=logger, *args)
+        return self._getTargetClass()(options, *args)
 
     def _makeTempdir(self):
         import tempfile
         result = self._tmpdir = tempfile.mkdtemp()
         return result
 
-    def test_ctor_invalid_path(self):
-        self.assertRaises(ValueError, self._makeOne, '--path=/nonesuch')
+    def test_ctor_defaults(self):
+        import os
+        here = os.path.abspath('.')
+        indexer = self._makeOne()
+        self.assertEqual(indexer.path, here)
+        self.failIf(indexer.options.verbose)
+        self.assertEqual(indexer.options.index_name, 'simple')
+        self.failIf(indexer.options.keep_tempdir)
+
+    def test_ctor_uses_global_options_as_default(self):
+        options = self._makeOptions(path='/tmp/foo',
+                                    verbose=True, keep_tempdir=True)
+        indexer = self._getTargetClass()(options)
+        self.assertEqual(indexer.path, '/tmp/foo')
+        self.failUnless(indexer.options.verbose)
+        self.failUnless(indexer.options.keep_tempdir)
+
+    def test_ctor_invalid_path_doesnt_raise(self):
+        indexer = self._makeOne('--path=/nonesuch')
+        self.assertEqual(indexer.path, '/nonesuch')
 
     def test_blather_not_verbose(self):
         def _dont_go_here(*args):
@@ -228,6 +250,10 @@ class IndexerTests(unittest.TestCase):
                                 logger=logged.append)
         indexer.blather('foo')
         self.assertEqual(logged, ['foo'])
+
+    def test_make_index_invalid_path_raises(self):
+        indexer = self._makeOne('--path=/nonesuch')
+        self.assertRaises(ValueError, indexer.make_index)
 
     def test_make_index_index_dir_exists_raises(self):
         import os

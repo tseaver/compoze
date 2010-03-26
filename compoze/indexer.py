@@ -117,17 +117,13 @@ class Indexer:
             default=False,
             help="Keep temporary directory")
 
+        self.usage = parser.format_help()
+
         options, args = parser.parse_args(argv)
 
         self.options = options
 
         path = os.path.abspath(os.path.expanduser(options.path))
-
-        if not os.path.isdir(path):
-            msg = StringIO.StringIO()
-            msg.write('Not a directory: %s\n\n' % path)
-            msg.write(parser.format_help())
-            raise ValueError(msg.getvalue())
 
         self.path = path
         self._logger = kw.get('logger', _print)
@@ -143,6 +139,12 @@ class Indexer:
         """
         if path is None:
             path = self.path
+
+        if not os.path.isdir(path):
+            msg = StringIO.StringIO()
+            msg.write('Not a directory: %s\n\n' % path)
+            msg.write(self.usage)
+            raise ValueError(msg.getvalue())
 
         index_dir = os.path.join(path, self.options.index_name)
         if os.path.exists(index_dir):
