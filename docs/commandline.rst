@@ -25,6 +25,10 @@ Global options:
 
    Print help on the available sub-commands.
 
+.. cmdoption:: -c CONFIG_FILE, --config-file=CONFIG_FILE
+
+   Parse options from an INI-style config file.
+
 .. cmdoption:: -q, --quiet
 
    Suppress all non-essential output.
