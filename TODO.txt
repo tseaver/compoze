@@ -8,13 +8,19 @@ compoze TOODs
 
       * Unit tests mock it away too well.
 
-- [_] Use a config file for defaults like:
+- [X] Allow use of a a config file for setting defaults:
  
-      o ``index-url`` lists
+      * ``verbose``
 
-      o verbosity
+      * ``index-url``
 
-      etc.  Question: where should it go?
+      * ``find-links``
+
+      * ``fetch-site-packages``
+
+      * ``include-binary-eggs``
+
+      * ``keep-tempdir``
 
 - [_] Add a '--versions-file' argument to the ``compoze show`` and
       ``compoze fetch`` commands:  this should allow us to solve the
