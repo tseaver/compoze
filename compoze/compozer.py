@@ -129,14 +129,22 @@ class Compozer:
             command()
 
     def _parseConfigFile(self):
-        if self.options.config_file is not None:
+        op = self.options
+        cf_data = op.config_file_data = {}
+        if op.config_file is not None:
             cp = UnhosedConfigParser()
-            cp.read(self.options.config_file)
-            if cp.has_section('global'):
-                if cp.has_option('global', 'path'):
-                    self.options.path = cp.get('global', 'path')
-                if cp.has_option('global', 'verbose'):
-                    self.options.verbose = cp.getboolean('global', 'verbose')
+            cp.read(op.config_file)
+            for s_name in cp.sections():
+                if s_name == 'global':
+                    if cp.has_option('global', 'path'):
+                        self.options.path = cp.get('global', 'path')
+                    if cp.has_option('global', 'verbose'):
+                        self.options.verbose = cp.getboolean('global',
+                                                             'verbose')
+                else:
+                    s_data = cf_data[s_name] = {}
+                    for o_name in cp.options(s_name):
+                        s_data[o_name] = cp.get(s_name, o_name)
 
     def _print(self, text): # pragma NO COVERAGE
         print text

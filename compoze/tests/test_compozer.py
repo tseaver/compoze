@@ -145,11 +145,17 @@ class CompozerTests(unittest.TestCase, _CommandFaker):
         f = open(fn, 'w')
         f.writelines(['[global]\n',
                       'path = /tmp/foo\n',
+                      '\n',
+                      '[other]\n',
+                      'foo = bar\n',
+                      'baz = qux\n'
                      ])
         f.flush()
         f.close()
         compozer = self._makeOne(argv=['--config-file', fn, 'dummy'])
         self.assertEqual(compozer.options.config_file, fn)
+        self.assertEqual(compozer.options.config_file_data,
+                         {'other': {'foo': 'bar', 'baz': 'qux'}})
         self.assertEqual(compozer.options.path, '/tmp/foo')
 
     def test_ctor_helpcommands(self):
