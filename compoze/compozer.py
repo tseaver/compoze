@@ -3,6 +3,7 @@
 Register sub-commands by querying :mod:`setuptools` entry points for the
 group ``compoze_commands``.
 """
+from ConfigParser import ConfigParser
 import optparse
 import pkg_resources
 import textwrap
@@ -81,6 +82,13 @@ class Compozer:
             help="Show progress")
 
         parser.add_option(
+            '-c', '--config-file',
+            action='store',
+            dest='config_file',
+            default=None,
+            help="Configuration file")
+
+        parser.add_option(
             '-p', '--path',
             action='store',
             dest='path',
@@ -104,6 +112,8 @@ class Compozer:
                                              subsequent_indent='    '))
             return
 
+        self._parseConfigFile()
+
         for command_name, args in queue:
             if command_name is not None:
                 command = _COMMANDS[command_name](self.options, *args)
@@ -118,6 +128,16 @@ class Compozer:
         for command in self.commands:
             command()
 
+    def _parseConfigFile(self):
+        if self.options.config_file is not None:
+            cp = UnhosedConfigParser()
+            cp.read(self.options.config_file)
+            if cp.has_section('global'):
+                if cp.has_option('global', 'path'):
+                    self.options.path = cp.get('global', 'path')
+                if cp.has_option('global', 'verbose'):
+                    self.options.verbose = cp.getboolean('global', 'verbose')
+
     def _print(self, text): # pragma NO COVERAGE
         print text
 
@@ -128,6 +148,11 @@ class Compozer:
         if self.options.verbose:
             self.logger(text)
 
+class UnhosedConfigParser(ConfigParser):
+
+    def optionxform(self, key):
+        # no damned case flattening!
+        return key
 
 def main(argv=sys.argv[1:]):
     try:

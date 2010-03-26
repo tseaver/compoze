@@ -39,12 +39,24 @@ class Test_get_description(unittest.TestCase, _CommandFaker):
 
 class CompozerTests(unittest.TestCase, _CommandFaker):
 
+    _tempdir = None
+
+    def tearDown(self):
+        if self._tempdir is not None:
+            import shutil
+            shutil.rmtree(self._tempdir)
+
     def _getTargetClass(self):
         from compoze.compozer import Compozer
         return Compozer
 
     def _makeOne(self, *args, **kw):
         return self._getTargetClass()(*args, **kw)
+
+    def _makeTempdir(self):
+        import tempfile
+        self._tempdir = tempfile.mkdtemp()
+        return self._tempdir
 
     def test_ctor_empty_argv_raises(self):
         self.assertRaises(ValueError, self._makeOne, argv=[])
@@ -101,6 +113,7 @@ class CompozerTests(unittest.TestCase, _CommandFaker):
         compozer = self._makeOne(argv=['dummy'])
         self.failUnless(compozer.options.verbose)
         self.assertEqual(compozer.options.path, '.')
+        self.assertEqual(compozer.options.config_file, None)
 
     def test_ctor_quiet(self):
         class Dummy:
@@ -119,6 +132,25 @@ class CompozerTests(unittest.TestCase, _CommandFaker):
         self._updateCommands(dummy=Dummy)
         compozer = self._makeOne(argv=['--verbose', 'dummy'])
         self.failUnless(compozer.options.verbose)
+
+    def test_ctor_config_file(self):
+        import os
+        class Dummy:
+            def __init__(self, options, *args):
+                self.options = options
+                self.args = args
+        self._updateCommands(dummy=Dummy)
+        dir = self._makeTempdir()
+        fn = os.path.join(dir, 'test.cfg')
+        f = open(fn, 'w')
+        f.writelines(['[global]\n',
+                      'path = /tmp/foo\n',
+                     ])
+        f.flush()
+        f.close()
+        compozer = self._makeOne(argv=['--config-file', fn, 'dummy'])
+        self.assertEqual(compozer.options.config_file, fn)
+        self.assertEqual(compozer.options.path, '/tmp/foo')
 
     def test_ctor_helpcommands(self):
         class Dummy:
