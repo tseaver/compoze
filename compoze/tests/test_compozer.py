@@ -58,11 +58,20 @@ class CompozerTests(unittest.TestCase, _CommandFaker):
         self._tempdir = tempfile.mkdtemp()
         return self._tempdir
 
-    def test_ctor_empty_argv_raises(self):
-        self.assertRaises(ValueError, self._makeOne, argv=[])
-
-    def test_ctor_non_command_first_raises(self):
-        self.assertRaises(ValueError, self._makeOne, argv=['nonesuch'])
+    def test_ctor_w_non_command(self):
+        class Dummy:
+            """Dummy command"""
+        class Other(Dummy):
+            """OTher command"""
+        self._updateCommands(True, dummy=Dummy, other=Other)
+        logged = []
+        compozer = self._makeOne(argv=['nonesuch'], logger=logged.append)
+        self.assertEqual(len(logged), 5)
+        self.assertEqual(logged[0], 'Valid commands are:')
+        self.assertEqual(logged[1], ' dummy')
+        self.assertEqual(logged[2], '    ' + Dummy.__doc__)
+        self.assertEqual(logged[3], ' other')
+        self.assertEqual(logged[4], '    ' + Other.__doc__)
 
     def test_ctor_command_first_no_args(self):
         class Dummy:
@@ -145,6 +154,7 @@ class CompozerTests(unittest.TestCase, _CommandFaker):
         f = open(fn, 'w')
         f.writelines(['[global]\n',
                       'path = /tmp/foo\n',
+                      'verbose = false\n',
                       '\n',
                       '[other]\n',
                       'foo = bar\n',
@@ -157,8 +167,9 @@ class CompozerTests(unittest.TestCase, _CommandFaker):
         self.assertEqual(compozer.options.config_file_data,
                          {'other': {'foo': 'bar', 'baz': 'qux'}})
         self.assertEqual(compozer.options.path, '/tmp/foo')
+        self.failIf(compozer.options.verbose)
 
-    def test_ctor_helpcommands(self):
+    def test_ctor_w_help_commands(self):
         class Dummy:
             """Dummy command"""
         class Other(Dummy):
@@ -173,6 +184,16 @@ class CompozerTests(unittest.TestCase, _CommandFaker):
         self.assertEqual(logged[2], '    ' + Dummy.__doc__)
         self.assertEqual(logged[3], ' other')
         self.assertEqual(logged[4], '    ' + Other.__doc__)
+
+    def test__call___wo_commands(self):
+        from compoze.compozer import InvalidCommandLine
+        compozer = self._makeOne(argv=[])
+        self.assertRaises(InvalidCommandLine, compozer)
+
+    def test___call___w_non_command(self):
+        from compoze.compozer import InvalidCommandLine
+        compozer = self._makeOne(argv=['nonesuch'])
+        self.assertRaises(InvalidCommandLine, compozer)
 
     def test__call___w_commands(self):
         class Dummy:

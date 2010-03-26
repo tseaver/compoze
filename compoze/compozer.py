@@ -9,6 +9,15 @@ import pkg_resources
 import textwrap
 import sys
 
+class InvalidCommandLine(ValueError):
+    pass
+
+class NotACommand(object):
+    def __init__(self, bogus):
+        self.bogus = bogus
+    def __call__(self):
+        raise InvalidCommandLine('Not a command: %s' % self.bogus)
+
 _COMMANDS = {}
 
 for entry in pkg_resources.iter_entry_points('compoze_commands'):
@@ -99,6 +108,10 @@ class Compozer:
 
         self.options = options
 
+        for arg in args:
+            self.commands.append(NotACommand(arg))
+            options.help_commands = True
+
         if options.help_commands:
             keys = _COMMANDS.keys()
             keys.sort()
@@ -119,12 +132,12 @@ class Compozer:
                 command = _COMMANDS[command_name](self.options, *args)
                 self.commands.append(command)
 
-        if not self.commands:
-            raise ValueError('No commands specified')
-
     def __call__(self):
         """ Invoke sub-commands parsed by :meth:`parse_arguments`.
         """
+        if not self.commands:
+            raise InvalidCommandLine('No commands specified')
+
         for command in self.commands:
             command()
 
@@ -165,10 +178,10 @@ class UnhosedConfigParser(ConfigParser):
 def main(argv=sys.argv[1:]):
     try:
         compozer = Compozer(argv)
-    except ValueError, e: #pragma NO COVERAGE
+        compozer()
+    except InvalidCommandLine, e: #pragma NO COVERAGE
         print str(e)
         sys.exit(1)
-    compozer()
 
 if __name__ == '__main__': #pragma NO COVERAGE
     main()
