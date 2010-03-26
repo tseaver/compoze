@@ -44,47 +44,40 @@ class Fetcher:
             metavar='INDEX_URL',
             action='append',
             dest='index_urls',
-            default=[],
+            default=getattr(global_options, 'index_urls', []),
             help="Add a candidate index used to find distributions")
 
         parser.add_option(
-            '-l', '--find-link',
+            '-l', '--find-links',
             metavar='FIND_LINKS_URL',
             action='append',
             dest='find_links',
-            default=[],
-            help="Add a find-link url")
+            default=getattr(global_options, 'find_links', []),
+            help="Add a find-links url")
 
         parser.add_option(
             '-f', '--fetch-site-packages',
             action='store_true',
             dest='fetch_site_packages',
-            default=False,
+            default=getattr(global_options, 'fetch_site_packages', False),
             help="Fetch requirements used in site-packages")
 
         parser.add_option(
             '-b', '--include-binary-eggs',
             action='store_false',
             dest='source_only',
-            default=True,
+            default=getattr(global_options, 'source_only', True),
             help="Include binary distributions")
 
         parser.add_option(
             '-k', '--keep-tempdir',
             action='store_true',
             dest='keep_tempdir',
-            default=False,
+            default=getattr(global_options, 'keep_tempdir', False),
             help="Keep temporary directory")
 
+        self.usage = parser.format_help()
         options, args = parser.parse_args(argv)
-
-        if (not options.fetch_site_packages and
-            len(args) == 0):
-            msg = StringIO.StringIO()
-            msg.write('fetch: Either specify requirements, or else '
-                                    '--fetch-site-packages .\n\n')
-            msg.write(parser.format_help())
-            raise ValueError(msg.getvalue())
 
         if len(options.index_urls) == 0:
             options.index_urls = ['http://pypi.python.org/simple']
@@ -93,15 +86,6 @@ class Fetcher:
         self._expandRequirements(args)
 
         path = os.path.abspath(os.path.expanduser(options.path))
-
-        if not os.path.exists(path):
-            os.makedirs(path)
-
-        if not os.path.isdir(path):
-            msg = StringIO.StringIO()
-            msg.write('Not a directory: %s\n\n' % path)
-            msg.write(parser.format_help())
-            raise ValueError(msg.getvalue())
 
         self.path = path
         self._logger = kw.get('logger', _print)
@@ -121,6 +105,23 @@ class Fetcher:
         Report results using the logger.
         """
         # XXX ignore same-name problem for now
+
+        if (not self.options.fetch_site_packages and
+            len(self.requirements) == 0):
+            msg = StringIO.StringIO()
+            msg.write('fetch: Either specify requirements, or else '
+                                    '--fetch-site-packages .\n\n')
+            msg.write(self.usage)
+            raise ValueError(msg.getvalue())
+
+        if not os.path.exists(self.path):
+            os.makedirs(self.path)
+
+        if not os.path.isdir(self.path):
+            msg = StringIO.StringIO()
+            msg.write('Not a directory: %s\n\n' % self.path)
+            msg.write(self.usage)
+            raise ValueError(msg.getvalue())
 
         self.blather('=' * 50)
         self.blather('Scanning indexes for requirements')
@@ -223,10 +224,10 @@ def _print(text): #pragma NO COVERAGE
 def main(): #pragma NO COVERAGE
     try:
         fetcher = Fetcher(sys.argv[1:])
+        fetcher()
     except ValueError, e:
         print str(e)
         sys.exit(1)
-    fetcher()
 
 if __name__ == '__main__': #pragma NO COVERAGE
     main()

@@ -69,16 +69,21 @@ Options:
 
 .. cmdoption:: -q, --quiet
 
-   Suppress all non-essential output (overrides global option).
+   Suppress all non-essential output.
+   
+   Overrides global option.
 
 .. cmdoption:: -v, --verbose
 
-   Print more informative output (overrides global option).
+   Print more informative output.
+   
+   Overrides global option.
 
 .. cmdoption:: -p PATH, --path=PATH
 
-   Fetch :term:`source distribution` archives into ``PATH``
-   (overrides global option).
+   Fetch :term:`source distribution` archives into ``PATH``.
+  
+   Overrides global option.
 
 .. cmdoption:: -u INDEX_URL, --index-url=INDEX_URL
 
@@ -86,7 +91,9 @@ Options:
    a :term:`source distribution`.  May be repeated.  If not passed, default
    to searching PyPI (http://pypi.python.org/simple).
 
-.. cmdoption:: -l FIND_LINKS_URL, --find-link=FIND_LINKS_URL
+   Overrides global option.
+
+.. cmdoption:: -l FIND_LINKS_URL, --find-links=FIND_LINKS_URL
 
    Add ``FIND_LINKS_URL`` to the list of pages in which to search for links
    to :term:`source distribution` archives.  May be repeated.
@@ -130,16 +137,21 @@ Options:
 
 .. cmdoption:: -q, --quiet
 
-   Suppress all non-essential output (overrides global option).
+   Suppress all non-essential output.
+   
+   Overrides global option.
 
 .. cmdoption:: -v, --verbose
 
-   Print more informative output (overrides global option).
+   Print more informative output.
+   
+   Overrides global option.
 
 .. cmdoption:: -p PATH, --path=PATH
 
    Index :term:`source distribution` archives in ``PATH``.
-   (overrides global option).
+  
+   Overrides global option.
 
 .. cmdoption:: -n INDEX_NAME, --index-name=INDEX_NAME
 
@@ -173,16 +185,22 @@ Options:
 
 .. cmdoption:: -q, --quiet
 
-   Suppress all non-essential output (overrides global option).
+   Suppress all non-essential output.
+   
+   Overrides global option.
 
 .. cmdoption:: -v, --verbose
 
-   Print more informative output (overrides global option).
+   Print more informative output.
+   
+   Overrides global option.
 
 .. cmdoption:: -p PATH, --path=PATH
 
    Move :term:`source distribution` archives from ``PATH`` into ``POOL_DIR``,
-   and create symlinks in ``PATH`` (overrides global option).
+   and create symlinks in ``PATH``.
+   
+   Overrides global option.
 
 
 .. _compoze_show_options:
@@ -206,17 +224,23 @@ Options:
 
 .. cmdoption:: -q, --quiet
 
-   Suppress all non-essential output (overrides global option).
+   Suppress all non-essential output.
+   
+   Overrides global option.
 
 .. cmdoption:: -v, --verbose
 
-   Print more informative output (overrides global option).
+   Print more informative output.
+   
+   Overrides global option.
 
 .. cmdoption:: -u INDEX_URL, --index-url=INDEX_URL
 
    Add ``INDEX_URL`` to the list of indexes to consult when searching for
    a :term:`source distribution`.  May be repeated.  If not passed, default
-   to searching PyPI (http://pypi.python.org/simple).
+   to searching PyPI (http://pypi.python.org/simple).  
+
+   Overrides global option.
 
 .. cmdoption:: -f, --fetch-site-packages
 

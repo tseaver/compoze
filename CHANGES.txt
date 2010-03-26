@@ -4,6 +4,8 @@ compoze Changelog
 After compoze 0.3.1 (unreleased)
 --------------------------------
 
+- Updated spelling of ``--find-link`` option to ``--find-links``.
+
 - Added a global ``--index-url`` option to permit setting index URL(s) before
   commands (or from the config file).
 
