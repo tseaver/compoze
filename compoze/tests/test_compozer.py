@@ -59,47 +59,47 @@ class CompozerTests(unittest.TestCase, _CommandFaker):
         return self._tempdir
 
     def test_ctor_default_options(self):
-        class Dummy:
-            def __init__(self, options, *args):
-                self.options = options
-                self.args = args
-        self._updateCommands(dummy=Dummy)
-        compozer = self._makeOne(argv=['dummy'])
+        compozer = self._makeOne(argv=[])
         self.failUnless(compozer.options.verbose)
         self.assertEqual(compozer.options.path, '.')
         self.assertEqual(compozer.options.config_file, None)
+        self.assertEqual(compozer.options.index_urls,
+                         ['http://pypi.python.org/simple'])
 
     def test_ctor_quiet(self):
-        class Dummy:
-            def __init__(self, options, *args):
-                self.options = options
-                self.args = args
-        self._updateCommands(dummy=Dummy)
-        compozer = self._makeOne(argv=['--quiet', 'dummy'])
+        compozer = self._makeOne(argv=['--quiet'])
         self.failIf(compozer.options.verbose)
 
     def test_ctor_verbose(self):
-        class Dummy:
-            def __init__(self, options, *args):
-                self.options = options
-                self.args = args
-        self._updateCommands(dummy=Dummy)
-        compozer = self._makeOne(argv=['--verbose', 'dummy'])
+        compozer = self._makeOne(argv=['--verbose'])
         self.failUnless(compozer.options.verbose)
+
+    def test_ctor_one_index_url(self):
+        compozer = self._makeOne(
+                        argv=['--index-url', 'http://example.com/simple'])
+        self.assertEqual(compozer.options.index_urls,
+                         ['http://example.com/simple'])
+
+    def test_ctor_multiple_index_urls(self):
+        compozer = self._makeOne(
+                        argv=['--index-url', 'http://example.com/simple',
+                              '--index-url', 'http://example.com/complex',
+                             ])
+        self.assertEqual(compozer.options.index_urls,
+                         ['http://example.com/simple',
+                          'http://example.com/complex'])
 
     def test_ctor_config_file(self):
         import os
-        class Dummy:
-            def __init__(self, options, *args):
-                self.options = options
-                self.args = args
-        self._updateCommands(dummy=Dummy)
         dir = self._makeTempdir()
         fn = os.path.join(dir, 'test.cfg')
         f = open(fn, 'w')
         f.writelines(['[global]\n',
                       'path = /tmp/foo\n',
                       'verbose = false\n',
+                      'index_url =\n',
+                      ' http://example.com/simple\n',
+                      ' http://example.com/complex\n',
                       '\n',
                       '[other]\n',
                       'foo = bar\n',
@@ -107,12 +107,15 @@ class CompozerTests(unittest.TestCase, _CommandFaker):
                      ])
         f.flush()
         f.close()
-        compozer = self._makeOne(argv=['--config-file', fn, 'dummy'])
+        compozer = self._makeOne(argv=['--config-file', fn])
         self.assertEqual(compozer.options.config_file, fn)
         self.assertEqual(compozer.options.config_file_data,
                          {'other': {'foo': 'bar', 'baz': 'qux'}})
         self.assertEqual(compozer.options.path, '/tmp/foo')
         self.failIf(compozer.options.verbose)
+        self.assertEqual(compozer.options.index_urls,
+                         ['http://example.com/simple',
+                          'http://example.com/complex'])
 
     def test_ctor_w_help_commands(self):
         class Dummy:
@@ -192,7 +195,8 @@ class CompozerTests(unittest.TestCase, _CommandFaker):
 
     def test___call___w_non_command(self):
         from compoze.compozer import InvalidCommandLine
-        compozer = self._makeOne(argv=['nonesuch'])
+        logged = []
+        compozer = self._makeOne(argv=['nonesuch'], logger=logged.append)
         self.assertRaises(InvalidCommandLine, compozer)
 
     def test__call___w_commands(self):

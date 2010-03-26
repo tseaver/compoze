@@ -4,8 +4,11 @@ compoze Changelog
 After compoze 0.3.1 (unreleased)
 --------------------------------
 
-- Added ``--config-file`` option to permit setting options in an INI-style
-  config file.
+- Added a global ``--index-url`` option to permit setting index URL(s) before
+  commands (or from the config file).
+
+- Added a global ``--config-file`` option to permit setting options in an
+  INI-style config file.
 
 compoze 0.3.1 (2010-03-25)
 --------------------------

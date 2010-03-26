@@ -104,7 +104,18 @@ class Compozer:
             default='.',
             help="Path for indexing")
 
+        parser.add_option(
+            '-u', '--index-url',
+            metavar='INDEX_URL',
+            action='append',
+            dest='index_urls',
+            default=[],
+            help="Add a candidate index used to find distributions")
+
         options, args = parser.parse_args(mine)
+
+        if len(options.index_urls) == 0:
+            options.index_urls = ['http://pypi.python.org/simple']
 
         self.options = options
 
@@ -154,6 +165,10 @@ class Compozer:
                     if cp.has_option('global', 'verbose'):
                         self.options.verbose = cp.getboolean('global',
                                                              'verbose')
+                    if cp.has_option('global', 'index_url'):
+                        text = cp.get('global', 'index_url')
+                        urls = [x.strip() for x in text.splitlines()]
+                        self.options.index_urls = filter(None, urls)
                 else:
                     s_data = cf_data[s_name] = {}
                     for o_name in cp.options(s_name):

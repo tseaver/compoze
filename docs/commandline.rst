@@ -41,6 +41,12 @@ Global options:
 
    Use ``PATH`` as the default path for subcommands.
 
+.. cmdoption:: -u INDEX_URL, --index-url=INDEX_URL
+
+   Add ``INDEX_URL`` to the list of indexes to consult when searching for
+   a :term:`source distribution`.  May be repeated.  If not passed, default
+   to searching PyPI (http://pypi.python.org/simple).
+
 
 .. _compoze_fetch_options:
 
