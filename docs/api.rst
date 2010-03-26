@@ -9,10 +9,7 @@ API Documentation for :mod:`compoze`
 .. automodule:: compoze.compozer
 
   .. autoclass:: Compozer
-
-    .. automethod:: parse_arguments
-
-    .. automethod:: __call__
+     :members:
 
 See :ref:`compoze_options` for command line options which are global, i.e.
 not specific to any of the subcommands.
@@ -26,10 +23,7 @@ not specific to any of the subcommands.
 .. automodule:: compoze.fetcher
 
   .. autoclass:: Fetcher
-
-    .. automethod:: download_distributions
-
-    .. automethod:: __call__
+     :members:
 
 See :ref:`compoze_fetch_options` for command line options for this
 subcommand.
@@ -42,6 +36,7 @@ subcommand.
 .. automodule:: compoze.index
 
   .. autoclass:: CompozePackageIndex
+     :members:
 
 
 .. _indexer_module:
@@ -52,10 +47,7 @@ subcommand.
 .. automodule:: compoze.indexer
 
   .. autoclass:: Indexer
-
-    .. automethod:: make_index
-
-    .. automethod:: __call__
+     :members:
 
 See :ref:`compoze_index_options` for command line options for this
 subcommand.
@@ -69,10 +61,7 @@ subcommand.
 .. automodule:: compoze.informer
 
   .. autoclass:: Informer
-
-    .. automethod:: show_distributions
-
-    .. automethod:: __call__
+     :members:
 
 See :ref:`compoze_show_options` for command line options for this
 subcommand.
@@ -86,10 +75,8 @@ subcommand.
 .. automodule:: compoze.pooler
 
   .. autoclass:: Pooler
+     :members:
 
-    .. automethod:: move_to_pool
-
-    .. automethod:: __call__
 
 See :ref:`compoze_pool_options` for command line options for this
 subcommand.
