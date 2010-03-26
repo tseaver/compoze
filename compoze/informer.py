@@ -24,7 +24,7 @@ class Informer:
             '-v', '--verbose',
             action='store_true',
             dest='verbose',
-            default=global_options.verbose,
+            default=getattr(global_options, 'verbose', False),
             help="Show progress")
 
         parser.add_option(
@@ -32,14 +32,14 @@ class Informer:
             metavar='INDEX_URL',
             action='append',
             dest='index_urls',
-            default=[],
+            default=getattr(global_options, 'index_urls', []),
             help="Add a candidate index used to find distributions")
 
         parser.add_option(
             '-f', '--fetch-site-packages',
             action='store_true',
             dest='fetch_site_packages',
-            default=False,
+            default=getattr(global_options, 'fetch_site_packages', False),
             help="Fetch requirements used in site-packages")
 
         parser.add_option(
@@ -53,7 +53,7 @@ class Informer:
             '-b', '--include-binary-eggs',
             action='store_false',
             dest='source_only',
-            default=True,
+            default=getattr(global_options, 'source_only', True),
             help="Include binary distributions")
 
         parser.add_option(
@@ -63,15 +63,9 @@ class Informer:
             default=False,
             help="Include development distributions")
 
-        options, args = parser.parse_args(argv)
+        self.usage = parser.format_help()
 
-        if (not options.fetch_site_packages and
-            len(args) == 0):
-            msg = StringIO.StringIO()
-            msg.write('show: Either specify requirements, or else'
-                                    '--fetch-site-packages .\n\n')
-            msg.write(parser.format_help())
-            raise ValueError(msg.getvalue())
+        options, args = parser.parse_args(argv)
 
         if len(options.index_urls) == 0:
             options.index_urls = ['http://pypi.python.org/simple']
@@ -87,6 +81,13 @@ class Informer:
     def show_distributions(self):
         """ Show available distributions for each index.
         """
+        if not self.requirements:
+            msg = StringIO.StringIO()
+            msg.write('show: Either specify requirements, or else'
+                                    '--fetch-site-packages .\n\n')
+            msg.write(self.usage)
+            raise ValueError(msg.getvalue())
+
         for index_url in self.options.index_urls:
             self.blather('=' * 50)
             self.blather('Package index: %s' % index_url)

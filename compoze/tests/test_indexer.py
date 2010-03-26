@@ -196,11 +196,14 @@ class IndexerTests(unittest.TestCase):
         from compoze.indexer import Indexer
         return Indexer
 
-    def _makeOptions(self, path='.', default_verbose=False, *args, **kw):
+    def _makeValues(self, **kw):
         from optparse import Values
+        return Values(kw.copy())
+
+    def _makeOptions(self, path='.', default_verbose=False, *args, **kw):
         default = kw.copy()
         default.setdefault('verbose', default_verbose)
-        values = Values(default)
+        values = self._makeValues(**default)
         values.path = path
         return values
 
@@ -219,7 +222,8 @@ class IndexerTests(unittest.TestCase):
     def test_ctor_defaults(self):
         import os
         here = os.path.abspath('.')
-        indexer = self._makeOne()
+        values = self._makeValues()
+        indexer = self._getTargetClass()(values)
         self.assertEqual(indexer.path, here)
         self.failIf(indexer.options.verbose)
         self.assertEqual(indexer.options.index_name, 'simple')
@@ -227,7 +231,9 @@ class IndexerTests(unittest.TestCase):
 
     def test_ctor_uses_global_options_as_default(self):
         options = self._makeOptions(path='/tmp/foo',
-                                    verbose=True, keep_tempdir=True)
+                                    verbose=True,
+                                    keep_tempdir=True,
+                                   )
         indexer = self._getTargetClass()(options)
         self.assertEqual(indexer.path, '/tmp/foo')
         self.failUnless(indexer.options.verbose)

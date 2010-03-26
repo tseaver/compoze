@@ -29,14 +29,14 @@ class Fetcher:
             '-v', '--verbose',
             action='store_true',
             dest='verbose',
-            default=global_options.verbose,
+            default=getattr(global_options, 'verbose', False),
             help="Show progress")
 
         parser.add_option(
             '-p', '--path',
             action='store',
             dest='path',
-            default=global_options.path,
+            default=getattr(global_options, 'path', '.'),
             help="Specify the path in which to store the fetched dists")
 
         parser.add_option(

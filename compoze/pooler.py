@@ -35,26 +35,25 @@ class Pooler(object):
             '-v', '--verbose',
             action='store_true',
             dest='verbose',
-            default=global_options.verbose,
+            default=getattr(global_options, 'verbose', False),
             help="Show progress")
 
         parser.add_option(
             '-p', '--path',
             action='store',
             dest='path',
-            default='.',
+            default=getattr(global_options, 'path', '.'),
             help="Path to process")
+
+        self.usage = parser.format_help()
 
         options, args = parser.parse_args(argv)
 
-        if len(args) != 1:
-            msg = StringIO.StringIO()
-            msg.write('No pool_dir!\n\n')
-            msg.write(parser.format_help())
-            raise ValueError(msg.getvalue())
-
         self.options = options
-        self.pool_dir = args[0]
+        self.pool_dir = None
+        if len(args) == 1:
+            self.pool_dir = args[0]
+
         self.release_dir = os.path.abspath(options.path)
         self._logger = kw.get('logger', _print)
 
@@ -79,6 +78,12 @@ class Pooler(object):
 
         Ignore any archives which are already symlinks.
         """
+        if self.pool_dir is None:
+            msg = StringIO.StringIO()
+            msg.write('No pool_dir!\n\n')
+            msg.write(self.usage)
+            raise ValueError(msg.getvalue())
+
         all, pending = self.listArchives()
         if len(all) == 0:
             raise ValueError('No non-link archives in release dir: %s'
@@ -120,10 +125,10 @@ def _print(text): #pragma NO COVERAGE
 def main(): #pragma NO COVERAGE
     try:
         update_pool = Pooler(sys.argv[1:])
+        update_pool()
     except ValueError, e:
         print str(e)
         sys.exit(1)
-    update_pool()
 
 if __name__ == '__main__': #pragma NO COVERAGE
     main()

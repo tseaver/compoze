@@ -13,16 +13,23 @@ class InformerTests(unittest.TestCase):
         from compoze.informer import Informer
         return Informer
 
-    def _makeOne(self, *args, **kw):
+    def _makeValues(self, **kw):
         from optparse import Values
-        logger = kw.pop('logger', None)
+        return Values(kw.copy())
+
+    def _makeOptions(self, **kw):
         default = kw.copy()
         default.setdefault('verbose', False)
-        values = Values(default)
+        values = self._makeValues(**default)
         values.path = '.'
+        return values
+
+    def _makeOne(self, *args, **kw):
+        logger = kw.pop('logger', None)
+        options = self._makeOptions(**kw)
         if logger is not None:
-            return self._getTargetClass()(values, logger=logger, *args)
-        return self._getTargetClass()(values, *args)
+            return self._getTargetClass()(options, logger=logger, *args)
+        return self._getTargetClass()(options, *args)
 
     def _makeTempDir(self):
         import tempfile
@@ -55,8 +62,15 @@ class InformerTests(unittest.TestCase):
             distros.append((rqmt.project_name, dist))
         return DummyIndex(distros)
 
-    def test_ctor_empty_argv_raises(self):
-        self.assertRaises(ValueError, self._makeOne, argv=[])
+    def test_ctor_defaults(self):
+        values = self._makeValues()
+        indexer = self._getTargetClass()(values)
+        self.assertEqual(indexer.requirements, [])
+        self.failIf(indexer.options.verbose)
+        self.failIf(indexer.options.fetch_site_packages)
+        self.failIf(indexer.options.only_best)
+        self.failUnless(indexer.options.source_only)
+        self.failIf(indexer.options.develop_ok)
 
     def test_ctor_index_factory(self):
         from compoze.index import CompozePackageIndex
@@ -92,6 +106,10 @@ class InformerTests(unittest.TestCase):
                                  logger=logged.append)
         informer.blather('foo')
         self.assertEqual(logged, ['foo'])
+
+    def test_show_distributions_empty_argv_raises(self):
+        informer = self._makeOne(argv=[])
+        self.assertRaises(ValueError, informer.show_distributions)
 
     def test_show_distributions_skips_develop_dists(self):
         import re

@@ -13,11 +13,14 @@ class FetcherTests(unittest.TestCase):
         from compoze.fetcher import Fetcher
         return Fetcher
 
-    def _makeOptions(self, path='.', default_verbose=False, *args, **kw):
+    def _makeValues(self, **kw):
         from optparse import Values
+        return Values(kw.copy())
+
+    def _makeOptions(self, path='.', default_verbose=False, *args, **kw):
         default = kw.copy()
         default.setdefault('verbose', default_verbose)
-        values = Values(default)
+        values = self._makeValues(**default)
         values.path = path
         return values
 
@@ -50,9 +53,11 @@ class FetcherTests(unittest.TestCase):
 
     def test_ctor_defaults(self):
         import os
-        fetcher = self._makeOne()
+        values = self._makeValues()
+        fetcher = self._getTargetClass()(values)
         path = os.path.abspath(os.path.expanduser('.'))
         self.assertEqual(fetcher.path, path)
+        self.failIf(fetcher.options.verbose)
         self.assertEqual(fetcher.options.index_urls,
                          ['http://pypi.python.org/simple'])
         self.assertEqual(fetcher.options.find_links, [])

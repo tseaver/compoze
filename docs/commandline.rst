@@ -47,6 +47,28 @@ Global options:
    a :term:`source distribution`.  May be repeated.  If not passed, default
    to searching PyPI (http://pypi.python.org/simple).
 
+.. cmdoption:: -l FIND_LINKS_URL, --find-links=FIND_LINKS_URL
+
+   Add ``FIND_LINKS_URL`` to the list of pages in which to search for links
+   to :term:`source distribution` archives.  May be repeated.
+
+.. cmdoption:: -f, --fetch-site-packages
+
+   In addition to any :term:`requirement` specified on the command
+   line, fetch :term:`source distribution` archives for each
+   :term:`project` installed in the current Python environment.
+
+.. cmdoption:: -b, --include-binary-eggs
+
+   Search :term:`binary distribution` archives in addition to
+   :term:`source distribution` archives for each :term:`requirement`.
+   Disabled by default.
+
+.. cmdoption:: -k, --keep-tempdir
+
+   Don't remove the temporary directory created during the indexing
+   operation (normally useful only for debugging a command).
+
 
 .. _compoze_fetch_options:
 
@@ -98,11 +120,15 @@ Options:
    Add ``FIND_LINKS_URL`` to the list of pages in which to search for links
    to :term:`source distribution` archives.  May be repeated.
 
+   Overrides global option.
+
 .. cmdoption:: -f, --fetch-site-packages
 
    In addition to any :term:`requirement` specified on the command
    line, fetch :term:`source distribution` archives for each
    :term:`project` installed in the current Python environment.
+
+   Overrides global option.
 
 .. cmdoption:: -b, --include-binary-eggs
 
@@ -110,10 +136,14 @@ Options:
    :term:`source distribution` archives for each :term:`requirement`.
    Disabled by default.
 
+   Overrides global option.
+
 .. cmdoption:: -k, --keep-tempdir
 
    Don't remove the temporary directory created during the indexing
    operation (normally useful only for debugging the command).
+
+   Overrides global option.
 
 
 .. _compoze_index_options:
@@ -162,6 +192,8 @@ Options:
 
    Don't remove the temporary directory created during the indexing
    operation (normally useful only for debugging the command).
+
+   Overrides global option.
 
 
 .. _compoze_pool_options:
@@ -248,6 +280,15 @@ Options:
    line, show information about :term:`source distribution` archives for
    each :term:`project` installed in the current Python environment.
 
+   Overrides global option.
+
+.. cmdoption:: -l FIND_LINKS_URL, --find-links=FIND_LINKS_URL
+
+   Add ``FIND_LINKS_URL`` to the list of pages in which to search for links
+   to :term:`source distribution` archives.  May be repeated.
+
+   Overrides global option.
+
 .. cmdoption:: -o, --show-only-best
 
    Show information only for the "best" :term:`source distribution`
@@ -259,6 +300,8 @@ Options:
    Search :term:`binary distribution` archives in addition to
    :term:`source distribution` archives for each :term:`requirement`.
    Disabled by default.
+
+   Overrides global option.
 
 .. cmdoption:: -d, --include-develop-eggs
 

@@ -93,14 +93,14 @@ class Indexer:
             '-v', '--verbose',
             action='store_true',
             dest='verbose',
-            default=global_options.verbose,
+            default=getattr(global_options, 'verbose', False),
             help="Show progress")
 
         parser.add_option(
             '-p', '--path',
             action='store',
             dest='path',
-            default=global_options.path,
+            default=getattr(global_options, 'path', '.'),
             help="Specify the path in which to build the index")
 
         parser.add_option(
@@ -114,7 +114,7 @@ class Indexer:
             '-k', '--keep-tempdir',
             action='store_true',
             dest='keep_tempdir',
-            default=False,
+            default=getattr(global_options, 'keep_tempdir', False),
             help="Keep temporary directory")
 
         self.usage = parser.format_help()
