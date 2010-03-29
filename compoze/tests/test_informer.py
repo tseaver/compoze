@@ -69,7 +69,6 @@ class InformerTests(unittest.TestCase):
         self.failIf(informer.options.verbose)
         self.assertEqual(informer.options.index_urls,
                          ['http://pypi.python.org/simple'])
-        self.assertEqual(informer.options.find_links, [])
         self.failIf(informer.options.fetch_site_packages)
         self.failIf(informer.options.only_best)
         self.failUnless(informer.options.source_only)
@@ -82,7 +81,6 @@ class InformerTests(unittest.TestCase):
         g_options = self._makeOptions(path='/tmp/foo',
                                       verbose=True,
                                       index_urls=['http://example.com/simple'],
-                                      find_links=['http://example.com/links'],
                                       fetch_site_packages=True,
                                       source_only=False,
                                       keep_tempdir=True,
@@ -94,8 +92,6 @@ class InformerTests(unittest.TestCase):
         self.failUnless(informer.options.verbose)
         self.assertEqual(informer.options.index_urls,
                          ['http://example.com/simple'])
-        self.assertEqual(informer.options.find_links,
-                         ['http://example.com/links'])
         self.failUnless(informer.options.fetch_site_packages)
         self.failUnless(informer.options.use_versions)
         self.assertEqual(informer.options.versions_section, 'SECTION')
@@ -112,12 +108,6 @@ class InformerTests(unittest.TestCase):
                                )
         self.assertEqual(informer.options.index_urls,
                          ['http://example.com/simple'])
-
-    def test_ctor_find_links(self):
-        informer = self._makeOne('--find-links=http://example.com/links',
-                               )
-        self.assertEqual(informer.options.find_links,
-                         ['http://example.com/links'])
 
     def test_ctor_use_versions_no_versions_section(self):
         informer = self._makeOne('--use-versions')

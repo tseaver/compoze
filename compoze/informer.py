@@ -36,14 +36,6 @@ class Informer:
             help="Add a candidate index used to find distributions")
 
         parser.add_option(
-            '-l', '--find-links',
-            metavar='FIND_LINKS_URL',
-            action='append',
-            dest='find_links',
-            default=getattr(global_options, 'find_links', []),
-            help="Add a find-links url")
-
-        parser.add_option(
             '-f', '--fetch-site-packages',
             action='store_true',
             dest='fetch_site_packages',

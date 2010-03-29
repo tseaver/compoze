@@ -305,13 +305,6 @@ Options:
 
    Overrides global option.
 
-.. cmdoption:: -l FIND_LINKS_URL, --find-links=FIND_LINKS_URL
-
-   Add ``FIND_LINKS_URL`` to the list of pages in which to search for links
-   to :term:`source distribution` archives.  May be repeated.
-
-   Overrides global option.
-
 .. cmdoption:: -f, --fetch-site-packages
 
    In addition to any :term:`requirement` specified on the command
