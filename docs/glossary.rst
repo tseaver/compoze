@@ -13,6 +13,13 @@ Glossary
         added to Python's system path using the
         :command:`python setup.py develop` command.
 
+   extra
+        Additional "tags" on a requirement, indicating a dependency on
+        optional features of the :term:`project`.  See the `pkg_resources
+        Requirements Parsing
+        <http://peak.telecommunity.com/DevCenter/PkgResources#id11>`_
+        documentation for more.
+
    package index
         A web page listing projects known to the index, where each
         :term:`project` has a separate URL listing distributions (source
@@ -36,3 +43,18 @@ Glossary
    source distribution
         An archive of the sources of a particular version of a
         :term:`project`, produced using :command:`python setup.py sdist`.
+
+
+References
+----------
+
+Many of these terms derive their semantics from the following documentation:
+
+- :mod:`distutils` reference,
+  http://docs.python.org/distutils
+
+- :mod:`pkg_resources` reference,
+  http://peak.telecommunity.com/DevCenter/PkgResources
+
+- :mod:`setuptools` reference,
+  http://peak.telecommunity.com/DevCenter/setuptools

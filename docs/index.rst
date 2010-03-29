@@ -21,6 +21,7 @@ Reference
 
    install
    commandline
+   configuration
    api
    glossary
 
