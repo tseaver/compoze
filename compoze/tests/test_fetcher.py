@@ -64,6 +64,9 @@ class FetcherTests(unittest.TestCase):
         self.failIf(fetcher.options.fetch_site_packages)
         self.failUnless(fetcher.options.source_only)
         self.failIf(fetcher.options.keep_tempdir)
+        self.assertEqual(fetcher.options.use_versions, False)
+        self.assertEqual(fetcher.options.versions_section, None)
+        self.assertEqual(fetcher.options.config_file_data, {})
 
     def test_ctor_uses_global_options_as_default(self):
         g_options = self._makeOptions(path='/tmp/foo',
@@ -73,6 +76,9 @@ class FetcherTests(unittest.TestCase):
                                       fetch_site_packages=True,
                                       source_only=False,
                                       keep_tempdir=True,
+                                      use_versions=True,
+                                      versions_section='SECTION',
+                                      config_file_data={'foo': 'bar'},
                                      )
         fetcher = self._getTargetClass()(g_options)
         self.assertEqual(fetcher.path, '/tmp/foo')
@@ -83,6 +89,9 @@ class FetcherTests(unittest.TestCase):
         self.failUnless(fetcher.options.fetch_site_packages)
         self.failIf(fetcher.options.source_only)
         self.failUnless(fetcher.options.keep_tempdir)
+        self.assertEqual(fetcher.options.use_versions, True)
+        self.assertEqual(fetcher.options.versions_section, 'SECTION')
+        self.assertEqual(fetcher.options.config_file_data, {'foo': 'bar'})
 
     def test_ctor_invalid_path_doesnt_raise(self):
         import os
@@ -114,6 +123,16 @@ class FetcherTests(unittest.TestCase):
                                )
         self.assertEqual(fetcher.options.find_links,
                          ['http://example.com/links'])
+
+    def test_ctor_use_versions_no_versions_section(self):
+        fetcher = self._makeOne('--use-versions')
+        self.failUnless(fetcher.options.use_versions)
+        self.assertEqual(fetcher.options.versions_section, 'versions')
+
+    def test_ctor_versions_section_no_use_versions(self):
+        fetcher = self._makeOne('--versions-section=SECTION')
+        self.failUnless(fetcher.options.use_versions)
+        self.assertEqual(fetcher.options.versions_section, 'SECTION')
 
     def test_ctor_w_simple_requirement(self):
         fetcher = self._makeOne('compoze')
@@ -152,6 +171,50 @@ class FetcherTests(unittest.TestCase):
         self.assertEqual(fetcher.requirements[0].extras,
                          ('nonesuch', 'bother'))
 
+    def test_ctor_w_versions(self):
+        VERSIONS = {'versions': {'foo': '1.2.3'}}
+        g_options = self._makeOptions(use_versions=True,
+                                      config_file_data=VERSIONS,
+                                     )
+        fetcher = self._getTargetClass()(g_options)
+        self.assertEqual(len(fetcher.requirements), 1)
+        self.assertEqual(fetcher.requirements[0].project_name, 'foo')
+        self.assertEqual(fetcher.requirements[0].specs, [('==', '1.2.3')])
+        self.assertEqual(fetcher.requirements[0].extras, ())
+
+    def test_ctor_w_versions_and_range(self):
+        VERSIONS = {'versions': {'bar': '< 2.3dev'}}
+        g_options = self._makeOptions(use_versions=True,
+                                      config_file_data=VERSIONS,
+                                     )
+        fetcher = self._getTargetClass()(g_options)
+        self.assertEqual(len(fetcher.requirements), 1)
+        self.assertEqual(fetcher.requirements[0].project_name, 'bar')
+        self.assertEqual(fetcher.requirements[0].specs, [('<', '2.3dev')])
+        self.assertEqual(fetcher.requirements[0].extras, ())
+
+    def test_ctor_w_versions_and_extra(self):
+        VERSIONS = {'versions': {'baz|qux': '0.3'}}
+        g_options = self._makeOptions(use_versions=True,
+                                      config_file_data=VERSIONS,
+                                     )
+        fetcher = self._getTargetClass()(g_options)
+        self.assertEqual(len(fetcher.requirements), 1)
+        self.assertEqual(fetcher.requirements[0].project_name, 'baz')
+        self.assertEqual(fetcher.requirements[0].specs, [('==', '0.3')])
+        self.assertEqual(fetcher.requirements[0].extras, ('qux',))
+
+    def test_ctor_w_versions_and_extras(self):
+        VERSIONS = {'versions': {'baz|qux,spam': '0.3'}}
+        g_options = self._makeOptions(use_versions=True,
+                                      config_file_data=VERSIONS,
+                                     )
+        fetcher = self._getTargetClass()(g_options)
+        self.assertEqual(len(fetcher.requirements), 1)
+        self.assertEqual(fetcher.requirements[0].project_name, 'baz')
+        self.assertEqual(fetcher.requirements[0].specs, [('==', '0.3')])
+        self.assertEqual(fetcher.requirements[0].extras, ('qux', 'spam'))
+
     def test_ctor_default_logger(self):
         from compoze.fetcher import _print
         fetcher = self._makeOne()
@@ -178,7 +241,7 @@ class FetcherTests(unittest.TestCase):
         fetcher.blather('foo')
         self.assertEqual(logged, ['foo'])
 
-    def test_download_distributions_no_rqmts_or_fsp_raises(self):
+    def test_download_distributions_no_rqmts_or_fsp_or_raises(self):
         fetcher = self._makeOne(argv=[])
         self.assertRaises(ValueError, fetcher.download_distributions)
 

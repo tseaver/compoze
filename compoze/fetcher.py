@@ -63,6 +63,20 @@ class Fetcher:
             help="Fetch requirements used in site-packages")
 
         parser.add_option(
+            '-V', '--use-versions',
+            action='store_true',
+            dest='use_versions',
+            default=getattr(global_options, 'use_versions', False),
+            help="Use versions from config file?")
+
+        parser.add_option(
+            '-S', '--versions-section',
+            action='store',
+            dest='versions_section',
+            default=getattr(global_options, 'versions_section', None),
+            help="Use versions from alternate section of file")
+
+        parser.add_option(
             '-b', '--include-binary-eggs',
             action='store_false',
             dest='source_only',
@@ -81,6 +95,15 @@ class Fetcher:
 
         if len(options.index_urls) == 0:
             options.index_urls = ['http://pypi.python.org/simple']
+
+        if options.use_versions and options.versions_section is None:
+            options.versions_section = 'versions'
+
+        if options.versions_section is not None:
+            options.use_versions = True
+
+        options.config_file_data = getattr(global_options,
+                                           'config_file_data', {})
 
         self.options = options
         self._expandRequirements(args)
@@ -106,8 +129,7 @@ class Fetcher:
         """
         # XXX ignore same-name problem for now
 
-        if (not self.options.fetch_site_packages and
-            len(self.requirements) == 0):
+        if len(self.requirements) == 0:
             msg = StringIO.StringIO()
             msg.write('fetch: Either specify requirements, or else '
                                     '--fetch-site-packages .\n\n')
@@ -213,6 +235,21 @@ class Fetcher:
         if self.options.fetch_site_packages:
             for dist in pkg_resources.working_set:
                 args.append('%s == %s' % (dist.project_name, dist.version))
+
+        if self.options.use_versions:
+            s_name = self.options.versions_section
+            section = self.options.config_file_data.get(s_name, {})
+            for name, spec in section.items():
+                # Can't use [] in keys of INI file
+                if '|' in name:
+                    name, extras = name.split('|', 1)
+                    name = '%s[%s]' % (name, extras)
+                if '<' in spec or '=' in spec or '>' in spec:
+                    # Explicit version qualifiers pass through
+                    args.append('%s %s' % (name, spec))
+                else:
+                    # Implicit, use '=='
+                    args.append('%s == %s' % (name, spec))
 
         self.requirements = [x for x in pkg_resources.parse_requirements(args)
                                  if x.project_name != 'Python']
