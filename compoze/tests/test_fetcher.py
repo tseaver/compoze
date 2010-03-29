@@ -82,6 +82,7 @@ class FetcherTests(unittest.TestCase):
                                      )
         fetcher = self._getTargetClass()(g_options)
         self.assertEqual(fetcher.path, '/tmp/foo')
+        self.failUnless(fetcher.options.verbose)
         self.assertEqual(fetcher.options.index_urls,
                          ['http://example.com/simple'])
         self.assertEqual(fetcher.options.find_links,
@@ -89,7 +90,7 @@ class FetcherTests(unittest.TestCase):
         self.failUnless(fetcher.options.fetch_site_packages)
         self.failIf(fetcher.options.source_only)
         self.failUnless(fetcher.options.keep_tempdir)
-        self.assertEqual(fetcher.options.use_versions, True)
+        self.failUnless(fetcher.options.use_versions)
         self.assertEqual(fetcher.options.versions_section, 'SECTION')
         self.assertEqual(fetcher.options.config_file_data, {'foo': 'bar'})
 

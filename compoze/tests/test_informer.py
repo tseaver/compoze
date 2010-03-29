@@ -64,23 +64,70 @@ class InformerTests(unittest.TestCase):
 
     def test_ctor_defaults(self):
         values = self._makeValues()
-        indexer = self._getTargetClass()(values)
-        self.assertEqual(indexer.requirements, [])
-        self.failIf(indexer.options.verbose)
-        self.failIf(indexer.options.fetch_site_packages)
-        self.failIf(indexer.options.only_best)
-        self.failUnless(indexer.options.source_only)
-        self.failIf(indexer.options.develop_ok)
+        informer = self._getTargetClass()(values)
+        self.assertEqual(informer.requirements, [])
+        self.failIf(informer.options.verbose)
+        self.assertEqual(informer.options.index_urls,
+                         ['http://pypi.python.org/simple'])
+        self.assertEqual(informer.options.find_links, [])
+        self.failIf(informer.options.fetch_site_packages)
+        self.failIf(informer.options.only_best)
+        self.failUnless(informer.options.source_only)
+        self.failIf(informer.options.develop_ok)
+        self.assertEqual(informer.options.use_versions, False)
+        self.assertEqual(informer.options.versions_section, None)
+        self.assertEqual(informer.options.config_file_data, {})
+
+    def test_ctor_uses_global_options_as_default(self):
+        g_options = self._makeOptions(path='/tmp/foo',
+                                      verbose=True,
+                                      index_urls=['http://example.com/simple'],
+                                      find_links=['http://example.com/links'],
+                                      fetch_site_packages=True,
+                                      source_only=False,
+                                      keep_tempdir=True,
+                                      use_versions=True,
+                                      versions_section='SECTION',
+                                      config_file_data={'foo': 'bar'},
+                                     )
+        informer = self._getTargetClass()(g_options)
+        self.failUnless(informer.options.verbose)
+        self.assertEqual(informer.options.index_urls,
+                         ['http://example.com/simple'])
+        self.assertEqual(informer.options.find_links,
+                         ['http://example.com/links'])
+        self.failUnless(informer.options.fetch_site_packages)
+        self.failUnless(informer.options.use_versions)
+        self.assertEqual(informer.options.versions_section, 'SECTION')
+        self.assertEqual(informer.options.config_file_data, {'foo': 'bar'})
+        self.failIf(informer.options.source_only)
 
     def test_ctor_index_factory(self):
         from compoze.index import CompozePackageIndex
-        fetcher = self._makeOne('--fetch-site-packages')
-        self.failUnless(fetcher.index_factory is CompozePackageIndex)
+        informer = self._makeOne()
+        self.failUnless(informer.index_factory is CompozePackageIndex)
 
-    def test_ctor_default_index_url_is_cheeseshop(self):
-        informer = self._makeOne('--fetch-site-packages')
+    def test_ctor_explicit_index_url(self):
+        informer = self._makeOne('--index-url=http://example.com/simple',
+                               )
         self.assertEqual(informer.options.index_urls,
-                         ['http://pypi.python.org/simple'])
+                         ['http://example.com/simple'])
+
+    def test_ctor_find_links(self):
+        informer = self._makeOne('--find-links=http://example.com/links',
+                               )
+        self.assertEqual(informer.options.find_links,
+                         ['http://example.com/links'])
+
+    def test_ctor_use_versions_no_versions_section(self):
+        informer = self._makeOne('--use-versions')
+        self.failUnless(informer.options.use_versions)
+        self.assertEqual(informer.options.versions_section, 'versions')
+
+    def test_ctor_versions_section_no_use_versions(self):
+        informer = self._makeOne('--versions-section=SECTION')
+        self.failUnless(informer.options.use_versions)
+        self.assertEqual(informer.options.versions_section, 'SECTION')
 
     def test_ctor_default_logger(self):
         from compoze.informer import _print
@@ -91,19 +138,48 @@ class InformerTests(unittest.TestCase):
         informer = self._makeOne('--fetch-site-packages', logger=self)
         self.failUnless(informer._logger is self)
 
+    def test_ctor_w_versions(self):
+        VERSIONS = {'versions': {'foo': '1.2.3'}}
+        g_options = self._makeOptions(use_versions=True,
+                                      config_file_data=VERSIONS,
+                                     )
+        informer = self._getTargetClass()(g_options)
+        self.assertEqual(len(informer.requirements), 1)
+        self.assertEqual(informer.requirements[0].project_name, 'foo')
+        self.assertEqual(informer.requirements[0].specs, [('==', '1.2.3')])
+        self.assertEqual(informer.requirements[0].extras, ())
+
+    def test_ctor_w_versions_and_range(self):
+        VERSIONS = {'versions': {'bar': '< 2.3dev'}}
+        g_options = self._makeOptions(use_versions=True,
+                                      config_file_data=VERSIONS,
+                                     )
+        informer = self._getTargetClass()(g_options)
+        self.assertEqual(len(informer.requirements), 1)
+        self.assertEqual(informer.requirements[0].project_name, 'bar')
+        self.assertEqual(informer.requirements[0].specs, [('<', '2.3dev')])
+        self.assertEqual(informer.requirements[0].extras, ())
+
+    def test_ctor_w_versions_and_extra(self):
+        VERSIONS = {'versions': {'baz|qux': '0.3'}}
+        g_options = self._makeOptions(use_versions=True,
+                                      config_file_data=VERSIONS,
+                                     )
+        informer = self._getTargetClass()(g_options)
+        self.assertEqual(len(informer.requirements), 1)
+        self.assertEqual(informer.requirements[0].project_name, 'baz')
+        self.assertEqual(informer.requirements[0].specs, [('==', '0.3')])
+        self.assertEqual(informer.requirements[0].extras, ('qux',))
+
     def test_blather_not_verbose(self):
         def _dont_go_here(*args):
             assert 0, args
-        informer = self._makeOne('--fetch-site-packages',
-                                 '--quiet',
-                                 logger=_dont_go_here)
+        informer = self._makeOne('--quiet', logger=_dont_go_here)
         informer.blather('foo') # doesn't assert
 
     def test_blather_verbose(self):
         logged = []
-        informer = self._makeOne('--fetch-site-packages',
-                                 '--verbose',
-                                 logger=logged.append)
+        informer = self._makeOne('--verbose', logger=logged.append)
         informer.blather('foo')
         self.assertEqual(logged, ['foo'])
 
