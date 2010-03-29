@@ -1,8 +1,8 @@
 compoze Changelog
 =================
 
-After compoze 0.3.1 (unreleased)
---------------------------------
+compoze 0.4 (2010-03-29)
+------------------------
 
 - Added global ``--use-versions`` and ``--versions-section`` options, to
   permit specifying requirements from the configuration file.  Updated
@@ -16,6 +16,7 @@ After compoze 0.3.1 (unreleased)
 
 - Added a global ``--config-file`` option to permit setting options in an
   INI-style config file.
+
 
 compoze 0.3.1 (2010-03-25)
 --------------------------

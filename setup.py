@@ -1,6 +1,6 @@
 ##############################################################################
 #
-# Copyright (c) 2007-2009 Agendaless Consulting and Contributors.
+# Copyright (c) 2007-2010 Agendaless Consulting and Contributors.
 # All Rights Reserved.
 #
 # This software is subject to the provisions of the BSD-like license at
@@ -12,7 +12,7 @@
 #
 ##############################################################################
 
-__version__ = '0.3.1'
+__version__ = '0.4'
 
 from ez_setup import use_setuptools
 use_setuptools()
