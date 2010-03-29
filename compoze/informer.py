@@ -132,6 +132,8 @@ class Informer:
                 for dist in self._findAll(index, rqmt):
                     self.blather('%s: %s' % (dist.project_name, dist.location))
 
+        # TODO:  implement ``--find-links`` logic.
+
         self.blather('=' * 50)
 
     def __call__(self): #pragma NO COVERAGE
