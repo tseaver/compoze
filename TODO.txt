@@ -22,7 +22,7 @@ compoze TOODs
 
       * ``keep-tempdir``
 
-- [_] Add options to the ``compoze show`` and ``compoze fetch`` commands
+- [X] Add options to the ``compoze show`` and ``compoze fetch`` commands
       to allow specifying an INI file and section containing project
       requirements, using the format used by ``zc.buildout``.
 
