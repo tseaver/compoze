@@ -62,13 +62,15 @@ class CompozerTests(unittest.TestCase, _CommandFaker):
         compozer = self._makeOne(argv=[])
         self.failUnless(compozer.options.verbose)
         self.assertEqual(compozer.options.path, '.')
-        self.assertEqual(compozer.options.config_file, None)
+        self.assertEqual(compozer.options.config_files, [])
         self.assertEqual(compozer.options.index_urls,
                          ['http://pypi.python.org/simple'])
         self.assertEqual(compozer.options.find_links, [])
         self.failIf(compozer.options.fetch_site_packages)
         self.failUnless(compozer.options.source_only)
         self.failIf(compozer.options.keep_tempdir)
+        self.assertEqual(compozer.options.use_versions, False)
+        self.assertEqual(compozer.options.versions_section, None)
 
     def test_ctor_quiet(self):
         compozer = self._makeOne(argv=['--quiet'])
@@ -103,6 +105,16 @@ class CompozerTests(unittest.TestCase, _CommandFaker):
         compozer = self._makeOne(argv=['--fetch-site-packages'])
         self.failUnless(compozer.options.fetch_site_packages)
 
+    def test_ctor_use_versions_no_versions_section(self):
+        compozer = self._makeOne(argv=['--use-versions'])
+        self.failUnless(compozer.options.use_versions)
+        self.assertEqual(compozer.options.versions_section, 'versions')
+
+    def test_ctor_versions_section_no_use_versions(self):
+        compozer = self._makeOne(argv=['--versions-section=SECTION'])
+        self.failUnless(compozer.options.use_versions)
+        self.assertEqual(compozer.options.versions_section, 'SECTION')
+
     def test_ctor_source_only(self):
         compozer = self._makeOne(argv=['--include-binary-eggs'])
         self.failIf(compozer.options.source_only)
@@ -111,7 +123,7 @@ class CompozerTests(unittest.TestCase, _CommandFaker):
         compozer = self._makeOne(argv=['--keep-tempdir'])
         self.failUnless(compozer.options.keep_tempdir)
 
-    def test_ctor_config_file(self):
+    def test_ctor_config_file_single(self):
         import os
         dir = self._makeTempdir()
         fn = os.path.join(dir, 'test.cfg')
@@ -135,7 +147,7 @@ class CompozerTests(unittest.TestCase, _CommandFaker):
         f.flush()
         f.close()
         compozer = self._makeOne(argv=['--config-file', fn])
-        self.assertEqual(compozer.options.config_file, fn)
+        self.assertEqual(compozer.options.config_files, [fn])
         self.assertEqual(compozer.options.config_file_data,
                          {'other': {'foo': 'bar', 'baz': 'qux'}})
         self.assertEqual(compozer.options.path, '/tmp/foo')
@@ -148,6 +160,89 @@ class CompozerTests(unittest.TestCase, _CommandFaker):
         self.failUnless(compozer.options.fetch_site_packages)
         self.failIf(compozer.options.source_only)
         self.failUnless(compozer.options.keep_tempdir)
+
+    def test_ctor_config_file_multiple(self):
+        import os
+        dir = self._makeTempdir()
+        fn1 = os.path.join(dir, 'test1.cfg')
+        f = open(fn1, 'w')
+        f.writelines(['[global]\n',
+                      'path = /tmp/foo\n',
+                      'verbose = false\n',
+                      'index-url =\n',
+                      ' http://example.com/simple\n',
+                      ' http://example.com/complex\n',
+                      'find-links =\n',
+                      ' http://example.com/links\n',
+                      'fetch-site-packages = true\n',
+                      'include-binary-eggs = false\n',
+                      'keep-tempdir = true\n',
+                      '\n',
+                      '[other]\n',
+                      'foo = bar\n',
+                      'baz = qux\n'
+                     ])
+        f.flush()
+        f.close()
+        fn2 = os.path.join(dir, 'test2.cfg')
+        f = open(fn2, 'w')
+        f.writelines(['[global]\n',
+                      'path = /tmp/bar\n',
+                      'verbose = true\n',
+                      'index-url =\n',
+                      ' http://example.com/another\n',
+                      'find-links =\n',
+                      'fetch-site-packages = false\n',
+                      '\n',
+                      '[versions]\n',
+                      'foo = 1.2.3\n',
+                      'baz = < 3.2dev\n'
+                     ])
+        f.flush()
+        f.close()
+        compozer = self._makeOne(argv=['--config-file', fn1,
+                                       '--config-file', fn2,
+                                      ])
+        self.assertEqual(compozer.options.config_files, [fn1, fn2])
+        self.assertEqual(compozer.options.config_file_data,
+                         {'other': {'foo': 'bar', 'baz': 'qux'},
+                          'versions': {'foo': '1.2.3', 'baz': '< 3.2dev'}})
+        self.assertEqual(compozer.options.path, '/tmp/bar')
+        self.failUnless(compozer.options.verbose)
+        self.assertEqual(compozer.options.index_urls,
+                         ['http://example.com/another'])
+        self.assertEqual(compozer.options.find_links, [])
+        self.failIf(compozer.options.fetch_site_packages)
+        self.failIf(compozer.options.source_only)
+        self.failUnless(compozer.options.keep_tempdir)
+
+    def test_ctor_config_file_multiple_merge_versions(self):
+        import os
+        dir = self._makeTempdir()
+        fn1 = os.path.join(dir, 'test1.cfg')
+        f = open(fn1, 'w')
+        f.writelines(['[versions]\n',
+                      'foo = 1.0.1\n',
+                      'bar = 0.5\n'
+                     ])
+        f.flush()
+        f.close()
+        fn2 = os.path.join(dir, 'test2.cfg')
+        f = open(fn2, 'w')
+        f.writelines(['[versions]\n',
+                      'foo = 1.2.3\n',
+                      'baz = < 3.2dev\n'
+                     ])
+        f.flush()
+        f.close()
+        compozer = self._makeOne(argv=['--config-file', fn1,
+                                       '--config-file', fn2,
+                                      ])
+        self.assertEqual(compozer.options.config_file_data,
+                         {'versions': {'foo': '1.2.3',
+                                       'bar': '0.5',
+                                       'baz': '< 3.2dev',
+                                      }})
 
     def test_ctor_w_help_commands(self):
         class Dummy:

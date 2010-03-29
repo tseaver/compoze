@@ -28,6 +28,9 @@ Global options:
 .. cmdoption:: -c CONFIG_FILE, --config-file=CONFIG_FILE
 
    Parse options from an INI-style config file.
+   
+   May be repeated:  if so, options repeated in later files override those
+   in earlier files.
 
 .. cmdoption:: -q, --quiet
 
@@ -57,6 +60,18 @@ Global options:
    In addition to any :term:`requirement` specified on the command
    line, fetch :term:`source distribution` archives for each
    :term:`project` installed in the current Python environment.
+
+.. cmdoption:: -V, --use-versions
+
+   Parse requirements from a section of the config file.
+   
+   By default, uses the ``[versions]`` section.  Use ``--versions-section``
+   to override the default.
+
+.. cmdoption:: -S VERSIONS_SECTION, --versions-section=VERSIONS_SECTION
+
+   Override the namae of the config file section to parse for any additional
+   requirements.  Implies ``--use-versions``.
 
 .. cmdoption:: -b, --include-binary-eggs
 

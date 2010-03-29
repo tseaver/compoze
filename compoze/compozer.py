@@ -92,10 +92,10 @@ class Compozer:
 
         parser.add_option(
             '-c', '--config-file',
-            action='store',
-            dest='config_file',
-            default=None,
-            help="Configuration file")
+            action='append',
+            dest='config_files',
+            default=[],
+            help="Add a configuration file")
 
         parser.add_option(
             '-p', '--path',
@@ -128,6 +128,20 @@ class Compozer:
             help="Fetch requirements used in site-packages")
 
         parser.add_option(
+            '-V', '--use-versions',
+            action='store_true',
+            dest='use_versions',
+            default=False,
+            help="Use versions from config file?")
+
+        parser.add_option(
+            '-S', '--versions-section',
+            action='store',
+            dest='versions_section',
+            default=None,
+            help="Use versions from alternate section of file")
+
+        parser.add_option(
             '-b', '--include-binary-eggs',
             action='store_false',
             dest='source_only',
@@ -145,6 +159,12 @@ class Compozer:
 
         if len(options.index_urls) == 0:
             options.index_urls = ['http://pypi.python.org/simple']
+
+        if options.use_versions and options.versions_section is None:
+            options.versions_section = 'versions'
+
+        if options.versions_section is not None:
+            options.use_versions = True
 
         self.options = options
 
@@ -184,9 +204,9 @@ class Compozer:
     def _parseConfigFile(self):
         op = self.options
         cf_data = op.config_file_data = {}
-        if op.config_file is not None:
+        if op.config_files:
             cp = UnhosedConfigParser()
-            cp.read(op.config_file)
+            cp.read(op.config_files)
             for s_name in cp.sections():
                 if s_name == 'global':
                     if cp.has_option('global', 'path'):
