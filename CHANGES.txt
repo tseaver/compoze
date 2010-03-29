@@ -4,6 +4,10 @@ compoze Changelog
 After compoze 0.3.1 (unreleased)
 --------------------------------
 
+- Added global ``--use-versions`` and ``--versions-section`` options, to
+  permit specifying requirements from the configuration file.  Updated
+  ``compoze fetch`` and ``compoze show`` to use such requirements.
+
 - Normalized options, allowing more to be set globally or in the config
   file:  ``--index-url``, ``--find-links``, ``--fetch-site-packages``,
   ``--include-binary-eggs``, ``--keep-tempdir``.

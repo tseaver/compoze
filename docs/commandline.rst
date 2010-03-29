@@ -145,6 +145,22 @@ Options:
 
    Overrides global option.
 
+.. cmdoption:: -V, --use-versions
+
+   Parse requirements from a section of the config file.
+   
+   By default, uses the ``[versions]`` section.  Use ``--versions-section``
+   to override the default.
+
+   Overrides global option.
+
+.. cmdoption:: -S VERSIONS_SECTION, --versions-section=VERSIONS_SECTION
+
+   Override the namae of the config file section to parse for any additional
+   requirements.  Implies ``--use-versions``.
+
+   Overrides global option.
+
 .. cmdoption:: -b, --include-binary-eggs
 
    Search :term:`binary distribution` archives in addition to
@@ -289,6 +305,13 @@ Options:
 
    Overrides global option.
 
+.. cmdoption:: -l FIND_LINKS_URL, --find-links=FIND_LINKS_URL
+
+   Add ``FIND_LINKS_URL`` to the list of pages in which to search for links
+   to :term:`source distribution` archives.  May be repeated.
+
+   Overrides global option.
+
 .. cmdoption:: -f, --fetch-site-packages
 
    In addition to any :term:`requirement` specified on the command
@@ -297,10 +320,19 @@ Options:
 
    Overrides global option.
 
-.. cmdoption:: -l FIND_LINKS_URL, --find-links=FIND_LINKS_URL
+.. cmdoption:: -V, --use-versions
 
-   Add ``FIND_LINKS_URL`` to the list of pages in which to search for links
-   to :term:`source distribution` archives.  May be repeated.
+   Parse requirements from a section of the config file.
+   
+   By default, uses the ``[versions]`` section.  Use ``--versions-section``
+   to override the default.
+
+   Overrides global option.
+
+.. cmdoption:: -S VERSIONS_SECTION, --versions-section=VERSIONS_SECTION
+
+   Override the namae of the config file section to parse for any additional
+   requirements.  Implies ``--use-versions``.
 
    Overrides global option.
 
