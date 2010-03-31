@@ -11,16 +11,11 @@
 # FITNESS FOR A PARTICULAR PURPOSE
 #
 ##############################################################################
-
 __version__ = '0.4'
-
-from ez_setup import use_setuptools
-use_setuptools()
 
 import os
 from setuptools import setup
 from setuptools import find_packages
-
 
 here = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(here, 'README.txt')).read()
