@@ -30,6 +30,8 @@ compoze TOODs
       with a separate list of "known good" sets, but sharing a pool of
       distributions.
 
+- [_] Make ``compoze show`` understand the new PEP345 fields.
+
 - [_] Make ``compoze show`` handle the ``--find-links`` argument (currently
       accepted but has no effect).
 
