@@ -39,7 +39,7 @@ compoze TOODs
 
       o Consolidate shared logic w/ ``compoze fetch``?
 
-- [_] Add an 'install' command, which does like 'easy_install' but
+- [_] Add an 'install' command, which emulateds 'easy_install' but
       with the following differences:
 
       o it is willing to check multiple indexes
@@ -47,5 +47,7 @@ compoze TOODs
       o it records the index from which each package was downloaded
         somewhere (do we care?)
 
+      o it saves the source distribution by default.
+
 - [_] Add an 'upgrade' command, which checks all installed packages
-      in the working set against the specified (or configured) indexes).
+      in the working set against the specified (or configured) indexes.
