@@ -32,6 +32,8 @@ compoze TOODs
 
 - [_] Make ``compoze show`` understand the new PEP345 fields.
 
+      * Use the updated release of ``pkginfo``, which parses them by default.
+
 - [_] Make ``compoze show`` handle the ``--find-links`` argument (currently
       accepted but has no effect).
 
