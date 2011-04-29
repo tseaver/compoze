@@ -1,7 +1,7 @@
 :mod:`compoze`:  Managing Package Indexes
 =========================================
 
-:mod:`compoze` is a pacakge which provides a set of tools for managing
+:mod:`compoze` is a package which provides a set of tools for managing
 private / project-specific package indexes.
 
 
