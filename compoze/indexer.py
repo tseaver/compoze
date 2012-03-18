@@ -251,11 +251,20 @@ class Indexer:
                         command = ('cd %s/%s && %s setup.py --name --version'
                                     % (tmpdir, prefix, sys.executable))
                         popen = subprocess.Popen(command,
-                                                stdout=subprocess.PIPE,
-                                                shell=True,
+                                                 stdout=subprocess.PIPE,
+                                                 stderr=subprocess.PIPE,
+                                                 shell=True,
                                                 )
-                        output = popen.communicate()[0]
-                        return tuple(output.splitlines()[:2])
+                        stdout, stderr = popen.communicate()
+                        rc = popen.wait()
+                        if rc == 0:
+                            result = tuple(stdout.splitlines()[:2])
+                            if len(result) == 2:
+                                return result
+                            else:
+                                self.blather('No name / version in setup.py')
+                        else:
+                            self.blather('Error in setup.py: %s' % stderr)
                     finally:
                         shutil.rmtree(tmpdir)
             finally:

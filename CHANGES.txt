@@ -1,6 +1,15 @@
 compoze Changelog
 =================
 
+After compoze 0.4
+-----------------
+
+- Harden 'compoze.indexer' against archives containing 'setup.py' which
+  exit with errors, or which return bad data for 'setup.py --name --version'.
+  Fixes http://bugs.repoze.org/issue69:  thanks to Paul Winkler for the
+  original version of the patch.
+
+
 compoze 0.4 (2010-03-29)
 ------------------------
 

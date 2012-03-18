@@ -427,7 +427,61 @@ class IndexerTests(unittest.TestCase):
         self.assertEqual(tested._extractNameVersion(tfile.name),
                          ('testpackage', '3.14'))
 
+    def test__extractNameVersion_archive_w_erroring_setup(self):
+        import StringIO
+        import tarfile
+        import tempfile
+        tested = self._makeOne()
+        tfile = tempfile.NamedTemporaryFile(suffix='.tgz')
+        archive = tarfile.TarFile(fileobj=tfile, mode='w')
+        dinfo = tarfile.TarInfo('testpackage')
+        dinfo.type = tarfile.DIRTYPE
+        dinfo.mode = 0777
+        archive.addfile(dinfo)
+        buffer = StringIO.StringIO()
+        buffer.write(_ERRORING_SETUP)
+        size = buffer.tell()
+        buffer.seek(0)
+        finfo = tarfile.TarInfo('setup.py')
+        finfo.size = size
+        archive.addfile(finfo, buffer)
+        archive.close()
+        tfile.flush()
+        self.assertEqual(tested._extractNameVersion(tfile.name),
+                         (None, None))
+
+    def test__extractNameVersion_archive_w_noout_setup(self):
+        import StringIO
+        import tarfile
+        import tempfile
+        tested = self._makeOne()
+        tfile = tempfile.NamedTemporaryFile(suffix='.tgz')
+        archive = tarfile.TarFile(fileobj=tfile, mode='w')
+        dinfo = tarfile.TarInfo('testpackage')
+        dinfo.type = tarfile.DIRTYPE
+        dinfo.mode = 0777
+        archive.addfile(dinfo)
+        buffer = StringIO.StringIO()
+        buffer.write(_NOOUT_SETUP)
+        size = buffer.tell()
+        buffer.seek(0)
+        finfo = tarfile.TarInfo('setup.py')
+        finfo.size = size
+        archive.addfile(finfo, buffer)
+        archive.close()
+        tfile.flush()
+        self.assertEqual(tested._extractNameVersion(tfile.name),
+                         (None, None))
+
 _DUMMY_SETUP = """\
 print 'testpackage'
 print '3.14'
+"""
+
+_ERRORING_SETUP = """\
+import sys
+sys.exit(1)
+"""
+
+_NOOUT_SETUP = """\
 """
