@@ -1,6 +1,11 @@
 compoze Changelog
 =================
 
+compoze 0.4.1.1 (2012-04-19)
+----------------------------
+
+- Repair packaging error in 0.4.1 (CHANGES.txt not included in the tarball).
+
 compoze 0.4.1 (2012-03-18)
 --------------------------
 
