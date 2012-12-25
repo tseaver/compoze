@@ -1,6 +1,12 @@
 compoze Changelog
 =================
 
+Unreleased
+----------
+
+- Added 'setup.py dev' alias (installs 'nose' and 'coverage' after running
+  'setup.py develop').
+
 compoze 0.4.1.1 (2012-04-19)
 ----------------------------
 

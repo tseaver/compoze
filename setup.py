@@ -21,6 +21,7 @@ from setuptools import find_packages
 here = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(here, 'README.txt')).read()
 CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
+
  
 setup(name='compoze',
       version=__version__,
@@ -58,5 +59,8 @@ setup(name='compoze',
          'show = compoze.informer:Informer',
          'pool = compoze.pooler:Pooler',
         ],
+      },
+      extras_require = {
+        'testing': ['nose', 'coverage'],
       },
 )
