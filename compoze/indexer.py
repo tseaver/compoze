@@ -238,6 +238,9 @@ class Indexer:
         else:
             try:
                 names = archive.names()
+                if len(names) == 0:
+                    self.blather('Unknown archive -- ignored')
+                    return None, None
                 setup, a_setup = None, None
                 archive_dir = names[0].split('/', 1)[0]
                 the_setup = '%s/setup.py' %  archive_dir
