@@ -40,8 +40,9 @@ class _ArchiveTests:
         archive = self._makeOne()
         name = self._fixtureFiles()[0]['name']
         lines = archive.lines(name)
-        self.assertEqual(lines[:2], ['This is the first line of text file 1.',
-                                     'This is the second line of text file 1.'])
+        self.assertEqual(lines[:2],
+                         [b'This is the first line of text file 1.',
+                          b'This is the second line of text file 1.'])
 
     def test_extract(self):
         import os
