@@ -9,6 +9,7 @@ import tempfile
 import zipfile
 
 from compoze._compat import StringIO
+from compoze._compat import must_decode
 from compoze._compat import must_encode
 
 
@@ -276,9 +277,9 @@ class Indexer:
                         stdout, stderr = popen.communicate()
                         rc = popen.wait()
                         if rc == 0:
-                            result = tuple(stdout.splitlines()[:2])
+                            result = stdout.splitlines()[:2]
                             if len(result) == 2:
-                                return result
+                                return tuple([must_decode(x) for x in result])
                             else:
                                 self.blather('No name / version in setup.py')
                         else:
