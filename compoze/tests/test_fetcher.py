@@ -57,13 +57,13 @@ class FetcherTests(unittest.TestCase):
         fetcher = self._getTargetClass()(values)
         path = os.path.abspath(os.path.expanduser('.'))
         self.assertEqual(fetcher.path, path)
-        self.failIf(fetcher.options.verbose)
+        self.assertFalse(fetcher.options.verbose)
         self.assertEqual(fetcher.options.index_urls,
                          ['http://pypi.python.org/simple'])
         self.assertEqual(fetcher.options.find_links, [])
-        self.failIf(fetcher.options.fetch_site_packages)
-        self.failUnless(fetcher.options.source_only)
-        self.failIf(fetcher.options.keep_tempdir)
+        self.assertFalse(fetcher.options.fetch_site_packages)
+        self.assertTrue(fetcher.options.source_only)
+        self.assertFalse(fetcher.options.keep_tempdir)
         self.assertEqual(fetcher.options.use_versions, False)
         self.assertEqual(fetcher.options.versions_section, None)
         self.assertEqual(fetcher.options.config_file_data, {})
@@ -82,15 +82,15 @@ class FetcherTests(unittest.TestCase):
                                      )
         fetcher = self._getTargetClass()(g_options)
         self.assertEqual(fetcher.path, '/tmp/foo')
-        self.failUnless(fetcher.options.verbose)
+        self.assertTrue(fetcher.options.verbose)
         self.assertEqual(fetcher.options.index_urls,
                          ['http://example.com/simple'])
         self.assertEqual(fetcher.options.find_links,
                          ['http://example.com/links'])
-        self.failUnless(fetcher.options.fetch_site_packages)
-        self.failIf(fetcher.options.source_only)
-        self.failUnless(fetcher.options.keep_tempdir)
-        self.failUnless(fetcher.options.use_versions)
+        self.assertTrue(fetcher.options.fetch_site_packages)
+        self.assertFalse(fetcher.options.source_only)
+        self.assertTrue(fetcher.options.keep_tempdir)
+        self.assertTrue(fetcher.options.use_versions)
         self.assertEqual(fetcher.options.versions_section, 'SECTION')
         self.assertEqual(fetcher.options.config_file_data, {'foo': 'bar'})
 
@@ -111,7 +111,7 @@ class FetcherTests(unittest.TestCase):
         target = os.path.join(path, 'target')
         fetcher = self._makeOne('--path=%s' % target)
         self.assertEqual(fetcher.path, target)
-        self.failIf(os.path.isdir(target))
+        self.assertFalse(os.path.isdir(target))
 
     def test_ctor_explicit_index_url(self):
         fetcher = self._makeOne('--index-url=http://example.com/simple',
@@ -127,12 +127,12 @@ class FetcherTests(unittest.TestCase):
 
     def test_ctor_use_versions_no_versions_section(self):
         fetcher = self._makeOne('--use-versions')
-        self.failUnless(fetcher.options.use_versions)
+        self.assertTrue(fetcher.options.use_versions)
         self.assertEqual(fetcher.options.versions_section, 'versions')
 
     def test_ctor_versions_section_no_use_versions(self):
         fetcher = self._makeOne('--versions-section=SECTION')
-        self.failUnless(fetcher.options.use_versions)
+        self.assertTrue(fetcher.options.use_versions)
         self.assertEqual(fetcher.options.versions_section, 'SECTION')
 
     def test_ctor_w_simple_requirement(self):
@@ -219,16 +219,16 @@ class FetcherTests(unittest.TestCase):
     def test_ctor_default_logger(self):
         from compoze.fetcher import _print
         fetcher = self._makeOne()
-        self.failUnless(fetcher._logger is _print)
+        self.assertTrue(fetcher._logger is _print)
 
     def test_ctor_explicit_logger(self):
         fetcher = self._makeOne(logger=self)
-        self.failUnless(fetcher._logger is self)
+        self.assertTrue(fetcher._logger is self)
 
     def test_ctor_index_factory(self):
         from compoze.index import CompozePackageIndex
         fetcher = self._makeOne()
-        self.failUnless(fetcher.index_factory is CompozePackageIndex)
+        self.assertTrue(fetcher.index_factory is CompozePackageIndex)
 
     def test_blather_not_verbose(self):
         def _dont_go_here(*args):
@@ -257,7 +257,7 @@ class FetcherTests(unittest.TestCase):
         target = os.path.join(root, 'target')
         os.makedirs(target)
         path = os.path.join(root, 'path')
-        self.failIf(os.path.isdir(path))
+        self.assertFalse(os.path.isdir(path))
         #os.makedirs(path) NOT!  we want download_distributions to make it.
         rqmt = Requirement.parse('compoze')
         cheeseshop = self._makeIndex(rqmt)
@@ -271,11 +271,11 @@ class FetcherTests(unittest.TestCase):
                 return local
             raise ValueError(index_url)
         fetcher = self._makeOne('--quiet', '--path=%s' % path, 'compoze')
-        self.failIf(os.path.isdir(path))
+        self.assertFalse(os.path.isdir(path))
         fetcher.index_factory = _factory
         fetcher.tmpdir = target
         fetcher.download_distributions()
-        self.failUnless(os.path.isdir(path))
+        self.assertTrue(os.path.isdir(path))
 
     def test_download_distributions_no_find_links(self):
         import os
@@ -304,7 +304,7 @@ class FetcherTests(unittest.TestCase):
         self.assertEqual(local._fetched_with,
                          [(rqmt, target, True, False, False)])
 
-        self.failUnless(os.path.isfile(os.path.join(path, 'compoze')))
+        self.assertTrue(os.path.isfile(os.path.join(path, 'compoze')))
 
     def test_download_distributions_w_missing_dist(self):
         import os
@@ -333,7 +333,7 @@ class FetcherTests(unittest.TestCase):
         self.assertEqual(local._fetched_with,
                          [(rqmt, target, True, False, False)])
 
-        self.failIf(os.path.isfile(os.path.join(path, 'compoze')))
+        self.assertFalse(os.path.isfile(os.path.join(path, 'compoze')))
 
     def test_download_distributions_w_dist_on_both_indexes(self):
         import os
@@ -371,7 +371,7 @@ class FetcherTests(unittest.TestCase):
         self.assertEqual(local._fetched_with,
                          [(rqmt, target, True, False, False)])
 
-        self.failUnless(os.path.isfile(os.path.join(path, 'compoze')))
+        self.assertTrue(os.path.isfile(os.path.join(path, 'compoze')))
 
     def test_download_distributions_w_dist_not_on_first_index(self):
         import os
@@ -410,7 +410,7 @@ class FetcherTests(unittest.TestCase):
         self.assertEqual(local._fetched_with,
                          [(rqmt, target, True, False, False)])
 
-        self.failUnless(os.path.isfile(os.path.join(path, 'compoze')))
+        self.assertTrue(os.path.isfile(os.path.join(path, 'compoze')))
 
     def test_download_distributions_w_find_links_dist_in_index(self):
         import os
@@ -448,7 +448,7 @@ class FetcherTests(unittest.TestCase):
         self.assertEqual(local._fetched_with,
                          [(rqmt, target, True, False, False)])
 
-        self.failUnless(os.path.isfile(os.path.join(path, 'compoze')))
+        self.assertTrue(os.path.isfile(os.path.join(path, 'compoze')))
 
     def test_download_distributions_w_find_links_dist_not_in_index(self):
         import os
@@ -487,7 +487,7 @@ class FetcherTests(unittest.TestCase):
         self.assertEqual(local._fetched_with,
                          [(rqmt, target, True, False, False)])
 
-        self.failUnless(os.path.isfile(os.path.join(path, 'compoze')))
+        self.assertTrue(os.path.isfile(os.path.join(path, 'compoze')))
 
     def test_download_distributions_w_cheeseshop_raises(self):
         import os
@@ -524,7 +524,7 @@ class FetcherTests(unittest.TestCase):
         self.assertEqual(local._fetched_with,
                          [(rqmt, target, True, False, False)])
 
-        self.failUnless(os.path.isfile(os.path.join(path, 'compoze')))
+        self.assertTrue(os.path.isfile(os.path.join(path, 'compoze')))
         self.assertEqual(logged, ['  Error fetching: compoze'])
 
     def test_download_distributions_w_local_raises(self):
@@ -561,7 +561,7 @@ class FetcherTests(unittest.TestCase):
         self.assertEqual(local._fetched_with,
                          [(rqmt, target, True, False, False)])
 
-        self.failIf(os.path.isfile(os.path.join(path, 'compoze')))
+        self.assertFalse(os.path.isfile(os.path.join(path, 'compoze')))
 
 
 

@@ -126,7 +126,7 @@ class ZipArchiveTests(_ArchiveTests, unittest.TestCase):
         name = self._fixtureFiles()[1]['name']
         for prefix in self._getPrefixes(name):
             archive.extract(prefix, target)
-            self.failUnless(os.path.isdir(os.path.join(target, prefix)))
+            self.assertTrue(os.path.isdir(os.path.join(target, prefix)))
 
 class TarGzArchiveTests(_ArchiveTests, unittest.TestCase):
 
@@ -173,31 +173,31 @@ class Test__getArchiver(unittest.TestCase):
         from compoze.indexer import _getArchiver
         from compoze.indexer import TarArchive
         fname = self._getFilename('folder.tar.gz')
-        self.failUnless(isinstance(_getArchiver(fname), TarArchive))
+        self.assertTrue(isinstance(_getArchiver(fname), TarArchive))
 
     def test_tgz(self):
         from compoze.indexer import _getArchiver
         from compoze.indexer import TarArchive
         fname = self._getFilename('folder.tgz')
-        self.failUnless(isinstance(_getArchiver(fname), TarArchive))
+        self.assertTrue(isinstance(_getArchiver(fname), TarArchive))
 
     def test_bz2(self):
         from compoze.indexer import _getArchiver
         from compoze.indexer import TarArchive
         fname = self._getFilename('folder.bz2')
-        self.failUnless(isinstance(_getArchiver(fname), TarArchive))
+        self.assertTrue(isinstance(_getArchiver(fname), TarArchive))
 
     def test_zip(self):
         from compoze.indexer import _getArchiver
         from compoze.indexer import ZipArchive
         fname = self._getFilename('folder.zip')
-        self.failUnless(isinstance(_getArchiver(fname), ZipArchive))
+        self.assertTrue(isinstance(_getArchiver(fname), ZipArchive))
 
     def test_egg(self):
         from compoze.indexer import _getArchiver
         from compoze.indexer import ZipArchive
         fname = self._getFilename('folder.egg')
-        self.failUnless(isinstance(_getArchiver(fname), ZipArchive))
+        self.assertTrue(isinstance(_getArchiver(fname), ZipArchive))
 
 
 class IndexerTests(unittest.TestCase):
@@ -242,9 +242,9 @@ class IndexerTests(unittest.TestCase):
         values = self._makeValues()
         indexer = self._getTargetClass()(values)
         self.assertEqual(indexer.path, here)
-        self.failIf(indexer.options.verbose)
+        self.assertFalse(indexer.options.verbose)
         self.assertEqual(indexer.options.index_name, 'simple')
-        self.failIf(indexer.options.keep_tempdir)
+        self.assertFalse(indexer.options.keep_tempdir)
 
     def test_ctor_uses_global_options_as_default(self):
         options = self._makeOptions(path='/tmp/foo',
@@ -253,8 +253,8 @@ class IndexerTests(unittest.TestCase):
                                    )
         indexer = self._getTargetClass()(options)
         self.assertEqual(indexer.path, '/tmp/foo')
-        self.failUnless(indexer.options.verbose)
-        self.failUnless(indexer.options.keep_tempdir)
+        self.assertTrue(indexer.options.verbose)
+        self.assertTrue(indexer.options.keep_tempdir)
 
     def test_ctor_invalid_path_doesnt_raise(self):
         indexer = self._makeOne('--path=/nonesuch')
@@ -324,13 +324,13 @@ class IndexerTests(unittest.TestCase):
         indexer.make_index()
 
         top = open(os.path.join(tmpdir, 'simple', 'index.html')).read()
-        self.failUnless('<h1>Package Index</h1>' in top)
-        self.failUnless(
+        self.assertTrue('<h1>Package Index</h1>' in top)
+        self.assertTrue(
                 '<li><a href="testpackage">testpackage</a></li>' in top)
         sub = open(os.path.join(tmpdir, 'simple', 'testpackage', 'index.html')
                   ).read()
-        self.failUnless('<h1>testpackage Distributions</h1>' in sub)
-        self.failUnless(
+        self.assertTrue('<h1>testpackage Distributions</h1>' in sub)
+        self.assertTrue(
                 '<li><a href="../../testpackage-3.14.tar.gz">'
                 'testpackage-3.14.tar.gz</a></li>' in sub)
 

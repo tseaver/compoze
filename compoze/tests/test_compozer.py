@@ -60,25 +60,25 @@ class CompozerTests(unittest.TestCase, _CommandFaker):
 
     def test_ctor_default_options(self):
         compozer = self._makeOne(argv=[])
-        self.failUnless(compozer.options.verbose)
+        self.assertTrue(compozer.options.verbose)
         self.assertEqual(compozer.options.path, '.')
         self.assertEqual(compozer.options.config_files, [])
         self.assertEqual(compozer.options.index_urls,
                          ['http://pypi.python.org/simple'])
         self.assertEqual(compozer.options.find_links, [])
-        self.failIf(compozer.options.fetch_site_packages)
-        self.failUnless(compozer.options.source_only)
-        self.failIf(compozer.options.keep_tempdir)
+        self.assertFalse(compozer.options.fetch_site_packages)
+        self.assertTrue(compozer.options.source_only)
+        self.assertFalse(compozer.options.keep_tempdir)
         self.assertEqual(compozer.options.use_versions, False)
         self.assertEqual(compozer.options.versions_section, None)
 
     def test_ctor_quiet(self):
         compozer = self._makeOne(argv=['--quiet'])
-        self.failIf(compozer.options.verbose)
+        self.assertFalse(compozer.options.verbose)
 
     def test_ctor_verbose(self):
         compozer = self._makeOne(argv=['--verbose'])
-        self.failUnless(compozer.options.verbose)
+        self.assertTrue(compozer.options.verbose)
 
     def test_ctor_one_index_url(self):
         compozer = self._makeOne(
@@ -103,25 +103,25 @@ class CompozerTests(unittest.TestCase, _CommandFaker):
 
     def test_ctor_fetch_site_packages(self):
         compozer = self._makeOne(argv=['--fetch-site-packages'])
-        self.failUnless(compozer.options.fetch_site_packages)
+        self.assertTrue(compozer.options.fetch_site_packages)
 
     def test_ctor_use_versions_no_versions_section(self):
         compozer = self._makeOne(argv=['--use-versions'])
-        self.failUnless(compozer.options.use_versions)
+        self.assertTrue(compozer.options.use_versions)
         self.assertEqual(compozer.options.versions_section, 'versions')
 
     def test_ctor_versions_section_no_use_versions(self):
         compozer = self._makeOne(argv=['--versions-section=SECTION'])
-        self.failUnless(compozer.options.use_versions)
+        self.assertTrue(compozer.options.use_versions)
         self.assertEqual(compozer.options.versions_section, 'SECTION')
 
     def test_ctor_source_only(self):
         compozer = self._makeOne(argv=['--include-binary-eggs'])
-        self.failIf(compozer.options.source_only)
+        self.assertFalse(compozer.options.source_only)
 
     def test_ctor_keep_tempdir(self):
         compozer = self._makeOne(argv=['--keep-tempdir'])
-        self.failUnless(compozer.options.keep_tempdir)
+        self.assertTrue(compozer.options.keep_tempdir)
 
     def test_ctor_config_file_single(self):
         import os
@@ -151,15 +151,15 @@ class CompozerTests(unittest.TestCase, _CommandFaker):
         self.assertEqual(compozer.options.config_file_data,
                          {'other': {'foo': 'bar', 'baz': 'qux'}})
         self.assertEqual(compozer.options.path, '/tmp/foo')
-        self.failIf(compozer.options.verbose)
+        self.assertFalse(compozer.options.verbose)
         self.assertEqual(compozer.options.index_urls,
                          ['http://example.com/simple',
                           'http://example.com/complex'])
         self.assertEqual(compozer.options.find_links,
                          ['http://example.com/links'])
-        self.failUnless(compozer.options.fetch_site_packages)
-        self.failIf(compozer.options.source_only)
-        self.failUnless(compozer.options.keep_tempdir)
+        self.assertTrue(compozer.options.fetch_site_packages)
+        self.assertFalse(compozer.options.source_only)
+        self.assertTrue(compozer.options.keep_tempdir)
 
     def test_ctor_config_file_multiple(self):
         import os
@@ -208,13 +208,13 @@ class CompozerTests(unittest.TestCase, _CommandFaker):
                          {'other': {'foo': 'bar', 'baz': 'qux'},
                           'versions': {'foo': '1.2.3', 'baz': '< 3.2dev'}})
         self.assertEqual(compozer.options.path, '/tmp/bar')
-        self.failUnless(compozer.options.verbose)
+        self.assertTrue(compozer.options.verbose)
         self.assertEqual(compozer.options.index_urls,
                          ['http://example.com/another'])
         self.assertEqual(compozer.options.find_links, [])
-        self.failIf(compozer.options.fetch_site_packages)
-        self.failIf(compozer.options.source_only)
-        self.failUnless(compozer.options.keep_tempdir)
+        self.assertFalse(compozer.options.fetch_site_packages)
+        self.assertFalse(compozer.options.source_only)
+        self.assertTrue(compozer.options.keep_tempdir)
 
     def test_ctor_config_file_multiple_merge_versions(self):
         import os
@@ -284,7 +284,7 @@ class CompozerTests(unittest.TestCase, _CommandFaker):
         compozer = self._makeOne(argv=['dummy'])
         self.assertEqual(len(compozer.commands), 1)
         command = compozer.commands[0]
-        self.failUnless(isinstance(command, Dummy))
+        self.assertTrue(isinstance(command, Dummy))
         self.assertEqual(command.args, ())
 
     def test_ctor_command_first_w_args(self):
@@ -309,10 +309,10 @@ class CompozerTests(unittest.TestCase, _CommandFaker):
         compozer = self._makeOne(argv=['dummy', 'bar', 'baz', 'other', 'qux'])
         self.assertEqual(len(compozer.commands), 2)
         command = compozer.commands[0]
-        self.failUnless(isinstance(command, Dummy))
+        self.assertTrue(isinstance(command, Dummy))
         self.assertEqual(command.args, ('bar', 'baz'))
         command = compozer.commands[1]
-        self.failUnless(isinstance(command, Other))
+        self.assertTrue(isinstance(command, Other))
         self.assertEqual(command.args, ('qux',))
 
     def test__call___wo_commands(self):
@@ -340,8 +340,8 @@ class CompozerTests(unittest.TestCase, _CommandFaker):
         self._updateCommands(dummy=Dummy, other=Other)
         compozer = self._makeOne(argv=['dummy', 'bar', 'baz', 'other', 'qux'])
         compozer()
-        self.failUnless(compozer.commands[0].called)
-        self.failUnless(compozer.commands[1].called)
+        self.assertTrue(compozer.commands[0].called)
+        self.assertTrue(compozer.commands[1].called)
 
     def test_error(self):
         class Dummy:
@@ -422,5 +422,5 @@ class Test_main(unittest.TestCase, _CommandFaker):
             pass
         self._updateCommands(dummy=Dummy, other=Other)
         self._callFUT(argv=['dummy', 'bar', 'baz', 'other', 'qux'])
-        self.failUnless('Dummy' in called)
-        self.failUnless('Other' in called)
+        self.assertTrue('Dummy' in called)
+        self.assertTrue('Other' in called)

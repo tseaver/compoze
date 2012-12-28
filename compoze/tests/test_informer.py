@@ -66,13 +66,13 @@ class InformerTests(unittest.TestCase):
         values = self._makeValues()
         informer = self._getTargetClass()(values)
         self.assertEqual(informer.requirements, [])
-        self.failIf(informer.options.verbose)
+        self.assertFalse(informer.options.verbose)
         self.assertEqual(informer.options.index_urls,
                          ['http://pypi.python.org/simple'])
-        self.failIf(informer.options.fetch_site_packages)
-        self.failIf(informer.options.only_best)
-        self.failUnless(informer.options.source_only)
-        self.failIf(informer.options.develop_ok)
+        self.assertFalse(informer.options.fetch_site_packages)
+        self.assertFalse(informer.options.only_best)
+        self.assertTrue(informer.options.source_only)
+        self.assertFalse(informer.options.develop_ok)
         self.assertEqual(informer.options.use_versions, False)
         self.assertEqual(informer.options.versions_section, None)
         self.assertEqual(informer.options.config_file_data, {})
@@ -89,19 +89,19 @@ class InformerTests(unittest.TestCase):
                                       config_file_data={'foo': 'bar'},
                                      )
         informer = self._getTargetClass()(g_options)
-        self.failUnless(informer.options.verbose)
+        self.assertTrue(informer.options.verbose)
         self.assertEqual(informer.options.index_urls,
                          ['http://example.com/simple'])
-        self.failUnless(informer.options.fetch_site_packages)
-        self.failUnless(informer.options.use_versions)
+        self.assertTrue(informer.options.fetch_site_packages)
+        self.assertTrue(informer.options.use_versions)
         self.assertEqual(informer.options.versions_section, 'SECTION')
         self.assertEqual(informer.options.config_file_data, {'foo': 'bar'})
-        self.failIf(informer.options.source_only)
+        self.assertFalse(informer.options.source_only)
 
     def test_ctor_index_factory(self):
         from compoze.index import CompozePackageIndex
         informer = self._makeOne()
-        self.failUnless(informer.index_factory is CompozePackageIndex)
+        self.assertTrue(informer.index_factory is CompozePackageIndex)
 
     def test_ctor_explicit_index_url(self):
         informer = self._makeOne('--index-url=http://example.com/simple',
@@ -111,22 +111,22 @@ class InformerTests(unittest.TestCase):
 
     def test_ctor_use_versions_no_versions_section(self):
         informer = self._makeOne('--use-versions')
-        self.failUnless(informer.options.use_versions)
+        self.assertTrue(informer.options.use_versions)
         self.assertEqual(informer.options.versions_section, 'versions')
 
     def test_ctor_versions_section_no_use_versions(self):
         informer = self._makeOne('--versions-section=SECTION')
-        self.failUnless(informer.options.use_versions)
+        self.assertTrue(informer.options.use_versions)
         self.assertEqual(informer.options.versions_section, 'SECTION')
 
     def test_ctor_default_logger(self):
         from compoze.informer import _print
         informer = self._makeOne('--fetch-site-packages')
-        self.failUnless(informer._logger is _print)
+        self.assertTrue(informer._logger is _print)
 
     def test_ctor_explicit_logger(self):
         informer = self._makeOne('--fetch-site-packages', logger=self)
-        self.failUnless(informer._logger is self)
+        self.assertTrue(informer._logger is self)
 
     def test_ctor_w_versions(self):
         VERSIONS = {'versions': {'foo': '1.2.3'}}
@@ -206,8 +206,8 @@ class InformerTests(unittest.TestCase):
         log = '\n'.join(logged)
         skipped = re.compile(r'Skipping.*<compoze')
         found = re.compile(r'nose: /tmp/.*/cheeseshop/nose')
-        self.failUnless(skipped.search(log))
-        self.failUnless(found.search(log))
+        self.assertTrue(skipped.search(log))
+        self.assertTrue(found.search(log))
 
     def test_show_distributions_skips_multi_develop_dists(self):
         import re
@@ -238,8 +238,8 @@ class InformerTests(unittest.TestCase):
         log = '\n'.join(logged)
         skipped = re.compile(r'Skipping.*<compoze')
         found = re.compile(r'nose: /tmp/.*/cheeseshop/nose')
-        self.failUnless(skipped.search(log))
-        self.failUnless(found.search(log))
+        self.assertTrue(skipped.search(log))
+        self.assertTrue(found.search(log))
 
     def test_show_distributions_multiple_no_only_best(self):
         import re

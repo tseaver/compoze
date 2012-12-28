@@ -7,30 +7,30 @@ class Test_is_archive(unittest.TestCase):
         return is_archive(filename)
 
     def test_empty(self):
-        self.failIf(self._callFUT(''))
+        self.assertFalse(self._callFUT(''))
 
     def test_bogus(self):
-        self.failIf(self._callFUT('nonesuch.txt'))
+        self.assertFalse(self._callFUT('nonesuch.txt'))
 
     def test_tgz(self):
-        self.failIf(self._callFUT('foo_tgz'))
-        self.failUnless(self._callFUT('foo.tgz'))
+        self.assertFalse(self._callFUT('foo_tgz'))
+        self.assertTrue(self._callFUT('foo.tgz'))
 
     def test_tar_gz(self):
-        self.failIf(self._callFUT('foo_tar.gz'))
-        self.failUnless(self._callFUT('foo.tar.gz'))
+        self.assertFalse(self._callFUT('foo_tar.gz'))
+        self.assertTrue(self._callFUT('foo.tar.gz'))
 
     def test_tbz(self):
-        self.failIf(self._callFUT('foo_tbz'))
-        self.failUnless(self._callFUT('foo.tbz'))
+        self.assertFalse(self._callFUT('foo_tbz'))
+        self.assertTrue(self._callFUT('foo.tbz'))
 
     def test_tar_bz2(self):
-        self.failIf(self._callFUT('foo_tar.bz2'))
-        self.failUnless(self._callFUT('foo.tar.bz2'))
+        self.assertFalse(self._callFUT('foo_tar.bz2'))
+        self.assertTrue(self._callFUT('foo.tar.bz2'))
 
     def test_zip(self):
-        self.failIf(self._callFUT('foo_zip'))
-        self.failUnless(self._callFUT('foo.zip'))
+        self.assertFalse(self._callFUT('foo_zip'))
+        self.assertTrue(self._callFUT('foo.zip'))
 
 class PoolerTests(unittest.TestCase):
 
@@ -95,7 +95,7 @@ class PoolerTests(unittest.TestCase):
         pooler = self._getTargetClass()(values)
         self.assertEqual(pooler.pool_dir, None)
         self.assertEqual(pooler.release_dir, here)
-        self.failIf(pooler.options.verbose)
+        self.assertFalse(pooler.options.verbose)
 
     def test_ctor_uses_global_options_as_default(self):
         g_options = self._makeOptions(path='/tmp/foo',
@@ -104,7 +104,7 @@ class PoolerTests(unittest.TestCase):
         pooler = self._getTargetClass()(g_options, '/tmp/bar')
         self.assertEqual(pooler.pool_dir, '/tmp/bar')
         self.assertEqual(pooler.release_dir, '/tmp/foo')
-        self.failUnless(pooler.options.verbose)
+        self.assertTrue(pooler.options.verbose)
 
     def test_blather_not_verbose(self):
         def _dont_go_here(*args):
@@ -187,9 +187,9 @@ class PoolerTests(unittest.TestCase):
                                )
         pooler.move_to_pool()
 
-        self.failUnless(os.path.isdir(newdir))
-        self.failUnless(os.path.isfile(os.path.join(newdir, 'foo.tar.gz')))
-        self.failUnless(os.path.islink(source))
+        self.assertTrue(os.path.isdir(newdir))
+        self.assertTrue(os.path.isfile(os.path.join(newdir, 'foo.tar.gz')))
+        self.assertTrue(os.path.islink(source))
 
     def test_move_to_pool_existing_in_pool_dir(self):
         import os
@@ -203,6 +203,6 @@ class PoolerTests(unittest.TestCase):
                                )
         pooler.move_to_pool()
 
-        self.failUnless(os.path.isfile(target))
+        self.assertTrue(os.path.isfile(target))
         self.assertEqual(open(target).read(), 'TARGET') # not replaced
-        self.failUnless(os.path.islink(source))
+        self.assertTrue(os.path.islink(source))
