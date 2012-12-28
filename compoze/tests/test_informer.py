@@ -303,9 +303,10 @@ class DummyDistribution(object):
 
     def _get_location(self):
         import os
+        from compoze._compat import must_encode
         result = os.path.join(self.tmpdir, self.project_name) 
         f = open(result, 'wb')
-        f.write(self.project_name)
+        f.write(must_encode(self.project_name))
         f.flush()
         f.close()
         return result

@@ -9,6 +9,7 @@ import tempfile
 import zipfile
 
 from compoze._compat import StringIO
+from compoze._compat import must_decode
 
 
 class TarArchive:
@@ -45,7 +46,7 @@ class ZipArchive:
     def lines(self, name):
         if self.closed:
             raise IOError('closed')
-        return self.zipf.read(name).split('\n')
+        return must_decode(self.zipf.read(name)).split('\n')
 
     def extract(self, name, tempdir):
         if self.closed:
