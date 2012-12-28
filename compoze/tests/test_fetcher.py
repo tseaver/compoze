@@ -267,7 +267,7 @@ class FetcherTests(unittest.TestCase):
                 assert search_path is None
                 return cheeseshop
             if index_url ==  target:
-                assert search_path is ()
+                assert search_path == ()
                 return local
             raise ValueError(index_url)
         fetcher = self._makeOne('--quiet', '--path=%s' % path, 'compoze')
@@ -289,7 +289,7 @@ class FetcherTests(unittest.TestCase):
                 assert search_path is None
                 return cheeseshop
             if index_url ==  target:
-                assert search_path is ()
+                assert search_path == ()
                 return local
             raise ValueError(index_url)
         fetcher = self._makeOne('--quiet', '--path=%s' % path, 'compoze')
@@ -318,7 +318,7 @@ class FetcherTests(unittest.TestCase):
                 assert search_path is None
                 return cheeseshop
             if index_url ==  target:
-                assert search_path is ()
+                assert search_path == ()
                 return local
             raise ValueError(index_url)
         fetcher = self._makeOne('--quiet', '--path=%s' % path, 'compoze')
@@ -351,7 +351,7 @@ class FetcherTests(unittest.TestCase):
                 assert search_path is None
                 return other
             if index_url ==  target:
-                assert search_path is ()
+                assert search_path == ()
                 return local
             raise ValueError(index_url)
         fetcher = self._makeOne('--quiet', '--path=%s' % path,
@@ -389,7 +389,7 @@ class FetcherTests(unittest.TestCase):
                 assert search_path is None
                 return other
             if index_url ==  target:
-                assert search_path is ()
+                assert search_path == ()
                 return local
             raise ValueError(index_url)
         fetcher = self._makeOne('--quiet', '--path=%s' % path,
@@ -425,7 +425,7 @@ class FetcherTests(unittest.TestCase):
                 assert search_path is None
                 return cheeseshop
             if index_url ==  target:
-                assert search_path is ()
+                assert search_path == ()
                 return local
             if index_url is None:
                 assert search_path is None
@@ -463,7 +463,7 @@ class FetcherTests(unittest.TestCase):
                 assert search_path is None
                 return cheeseshop
             if index_url ==  target:
-                assert search_path is ()
+                assert search_path == ()
                 return local
             if index_url is None:
                 assert search_path is None
@@ -508,7 +508,7 @@ class FetcherTests(unittest.TestCase):
                 assert search_path is None
                 return cheeseshop
             if index_url ==  target:
-                assert search_path is ()
+                assert search_path == ()
                 return local
             raise ValueError(index_url)
         fetcher = self._makeOne('--quiet', '--path=%s' % path,
@@ -545,7 +545,7 @@ class FetcherTests(unittest.TestCase):
                 assert search_path is None
                 return cheeseshop
             if index_url ==  target:
-                assert search_path is ()
+                assert search_path == ()
                 return local
             raise ValueError(index_url)
         fetcher = self._makeOne('--quiet', '--path=%s' % path,
