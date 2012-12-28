@@ -430,7 +430,7 @@ class IndexerTests(unittest.TestCase):
         archive = tarfile.TarFile(fileobj=tfile, mode='w')
         dinfo = tarfile.TarInfo('testpackage')
         dinfo.type = tarfile.DIRTYPE
-        dinfo.mode = 0777
+        dinfo.mode = 0o777
         archive.addfile(dinfo)
         buffer = StringIO.StringIO()
         buffer.write(_DUMMY_SETUP)
@@ -455,7 +455,7 @@ class IndexerTests(unittest.TestCase):
         def add_tar_dir(path):
             dinfo = tarfile.TarInfo(path)
             dinfo.type = tarfile.DIRTYPE
-            dinfo.mode = 0777
+            dinfo.mode = 0o777
             archive.addfile(dinfo)
         def add_setup(path):
             buffer = StringIO.StringIO()
@@ -487,7 +487,7 @@ class IndexerTests(unittest.TestCase):
         def add_tar_dir(path):
             dinfo = tarfile.TarInfo(path)
             dinfo.type = tarfile.DIRTYPE
-            dinfo.mode = 0777
+            dinfo.mode = 0o777
             archive.addfile(dinfo)
         def add_setup(path):
             buffer = StringIO.StringIO()
@@ -518,7 +518,7 @@ class IndexerTests(unittest.TestCase):
         archive = tarfile.TarFile(fileobj=tfile, mode='w')
         dinfo = tarfile.TarInfo('testpackage')
         dinfo.type = tarfile.DIRTYPE
-        dinfo.mode = 0777
+        dinfo.mode = 0o777
         archive.addfile(dinfo)
         buffer = StringIO.StringIO()
         buffer.write(_DUMMY_SETUP)
@@ -541,7 +541,7 @@ class IndexerTests(unittest.TestCase):
         archive = tarfile.TarFile(fileobj=tfile, mode='w')
         dinfo = tarfile.TarInfo('testpackage')
         dinfo.type = tarfile.DIRTYPE
-        dinfo.mode = 0777
+        dinfo.mode = 0o777
         archive.addfile(dinfo)
         buffer = StringIO.StringIO()
         buffer.write(_ERRORING_SETUP)
@@ -564,7 +564,7 @@ class IndexerTests(unittest.TestCase):
         archive = tarfile.TarFile(fileobj=tfile, mode='w')
         dinfo = tarfile.TarInfo('testpackage')
         dinfo.type = tarfile.DIRTYPE
-        dinfo.mode = 0777
+        dinfo.mode = 0o777
         archive.addfile(dinfo)
         buffer = StringIO.StringIO()
         buffer.write(_NOOUT_SETUP)
