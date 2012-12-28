@@ -174,8 +174,7 @@ class Compozer:
             options.help_commands = True
 
         if options.help_commands:
-            keys = _COMMANDS.keys()
-            keys.sort()
+            keys = sorted(_COMMANDS.keys())
             self.error('Valid commands are:')
             for x in keys:
                 self.error(' %s' % x)
