@@ -4,6 +4,9 @@ compoze Changelog
 Unreleased
 ----------
 
+- Added logic to handle archives (e.g., Twisted's) which contain multiple
+  'setup.py' files.  Thanks to Travis Jensen for the patch.
+
 - Added 'setup.py dev' alias (installs 'nose' and 'coverage' after running
   'setup.py develop').
 
