@@ -4,6 +4,9 @@ compoze Changelog
 Unreleased
 ----------
 
+- Added wupport for building docs under ``tox``, including testing any
+  doctest snippets.
+
 - Added support for Python 3.2 and 3.3, including testing them under ``tox``.
 
 - Added support for PyPy, including testing it under ``tox``.
