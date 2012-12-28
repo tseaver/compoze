@@ -53,7 +53,8 @@ class _ArchiveTests:
         path = os.path.join(target, name)
         expected = ('This is the first line of text file 2.\n'
                     'This is the second line of text file 2.\n')
-        self.assertEqual(open(path).read(), expected)
+        with open(path) as f:
+            self.assertEqual(f.read(), expected)
 
     def test_extractall(self):
         import os
@@ -64,12 +65,14 @@ class _ArchiveTests:
         path = os.path.join(target, name)
         expected = ('This is the first line of text file 1.\n'
                     'This is the second line of text file 1.\n')
-        self.assertEqual(open(path).read(), expected)
+        with open(path) as f:
+            self.assertEqual(f.read(), expected)
         name = self._fixtureFiles()[1]['name']
         path = os.path.join(target, name)
         expected = ('This is the first line of text file 2.\n'
                     'This is the second line of text file 2.\n')
-        self.assertEqual(open(path).read(), expected)
+        with open(path) as f:
+            self.assertEqual(f.read(), expected)
 
     def test_close_disables_other_methods(self):
         archive = self._makeOne()
@@ -140,9 +143,11 @@ class TarGzArchiveTests(_ArchiveTests, unittest.TestCase):
         tmpdir = self._makeTempdir()
         filename = os.path.join(tmpdir, 'archive.tgz')
         archive = tarfile.open(filename, 'w:gz')
-        for data in self._fixtureFiles():
-            archive.add(data['path'], data['name'])
-        archive.close()
+        try:
+            for data in self._fixtureFiles():
+                archive.add(data['path'], data['name'])
+        finally:
+            archive.close()
         return filename
 
 class TarBz2ArchiveTests(_ArchiveTests, unittest.TestCase):
@@ -157,9 +162,11 @@ class TarBz2ArchiveTests(_ArchiveTests, unittest.TestCase):
         tmpdir = self._makeTempdir()
         filename = os.path.join(tmpdir, 'archive.tar.bz2')
         archive = tarfile.open(filename, 'w:bz2')
-        for data in self._fixtureFiles():
-            archive.add(data['path'], data['name'])
-        archive.close()
+        try:
+            for data in self._fixtureFiles():
+                archive.add(data['path'], data['name'])
+        finally:
+            archive.close()
         return filename
 
 class Test__getArchiver(unittest.TestCase):
@@ -293,10 +300,9 @@ class IndexerTests(unittest.TestCase):
     def test_make_index_only_non_distributions_raises(self):
         import os
         tmpdir = self._makeTempdir()
-        f = open(os.path.join(tmpdir, 'not-a-distribution.txt'), 'wb')
-        f.write(b'MOVE ALONG')
-        f.flush()
-        f.close()
+        with open(os.path.join(tmpdir, 'not-a-distribution.txt'), 'wb') as f:
+            f.write(b'MOVE ALONG')
+            f.flush()
         os.makedirs(os.path.join(tmpdir, 'subdir'))
         indexer = self._makeOne('--path=%s' % tmpdir)
         self.assertRaises(ValueError, indexer.make_index)
@@ -323,12 +329,14 @@ class IndexerTests(unittest.TestCase):
 
         indexer.make_index()
 
-        top = open(os.path.join(tmpdir, 'simple', 'index.html')).read()
+        with open(os.path.join(tmpdir, 'simple', 'index.html')) as f:
+            top = f.read()
         self.assertTrue('<h1>Package Index</h1>' in top)
         self.assertTrue(
                 '<li><a href="testpackage">testpackage</a></li>' in top)
-        sub = open(os.path.join(tmpdir, 'simple', 'testpackage', 'index.html')
-                  ).read()
+        with open(os.path.join(tmpdir, 'simple', 'testpackage', 'index.html')
+                 ) as f:
+            sub = f.read()
         self.assertTrue('<h1>testpackage Distributions</h1>' in sub)
         self.assertTrue(
                 '<li><a href="../../testpackage-3.14.tar.gz">'

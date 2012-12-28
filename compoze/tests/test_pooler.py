@@ -204,5 +204,6 @@ class PoolerTests(unittest.TestCase):
         pooler.move_to_pool()
 
         self.assertTrue(os.path.isfile(target))
-        self.assertEqual(open(target).read(), 'TARGET') # not replaced
+        with open(target) as f:
+            self.assertEqual(f.read(), 'TARGET') # not replaced
         self.assertTrue(os.path.islink(source))
