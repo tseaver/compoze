@@ -1,8 +1,8 @@
 compoze Changelog
 =================
 
-Unreleased
-----------
+1.0b1 (2012-12-28)
+------------------
 
 - Added wupport for building docs under ``tox``, including testing any
   doctest snippets.
