@@ -236,7 +236,7 @@ class Compozer:
                         s_data[o_name] = cp.get(s_name, o_name)
 
     def _print(self, text): # pragma NO COVERAGE
-        print text
+        print(text)
 
     def error(self, text):
         self.logger(text)
@@ -255,8 +255,8 @@ def main(argv=sys.argv[1:]):
     try:
         compozer = Compozer(argv)
         compozer()
-    except InvalidCommandLine, e: #pragma NO COVERAGE
-        print str(e)
+    except InvalidCommandLine as e: #pragma NO COVERAGE
+        print(str(e))
         sys.exit(1)
 
 if __name__ == '__main__': #pragma NO COVERAGE

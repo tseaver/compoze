@@ -116,18 +116,18 @@ class Pooler(object):
             all, pending = self.move_to_pool()
             self.blather(
                 "Updated %i out of %i archives" % (len(pending), len(all)))
-        except ValueError, e:
+        except ValueError as e:
             self.blather(str(e))
 
 def _print(text): #pragma NO COVERAGE
-    print text
+    print(text)
 
 def main(): #pragma NO COVERAGE
     try:
         update_pool = Pooler(sys.argv[1:])
         update_pool()
-    except ValueError, e:
-        print str(e)
+    except ValueError as e:
+        print(str(e))
         sys.exit(1)
 
 if __name__ == '__main__': #pragma NO COVERAGE

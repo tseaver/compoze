@@ -161,7 +161,7 @@ class Fetcher:
                 try:
                     dist = index.fetch_distribution(rqmt, self.tmpdir,
                                                     source=source_only)
-                except Exception, e:
+                except Exception as e:
                     self.error('  Error fetching: %s' % rqmt)
                     self.blather('    %s' % e)
                     results[rqmt] = False
@@ -255,15 +255,15 @@ class Fetcher:
                                  if x.project_name != 'Python']
 
 def _print(text): #pragma NO COVERAGE
-    print text
+    print(text)
 
 
 def main(): #pragma NO COVERAGE
     try:
         fetcher = Fetcher(sys.argv[1:])
         fetcher()
-    except ValueError, e:
-        print str(e)
+    except ValueError as e:
+        print(str(e))
         sys.exit(1)
 
 if __name__ == '__main__': #pragma NO COVERAGE

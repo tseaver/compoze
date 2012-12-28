@@ -290,13 +290,13 @@ class Indexer:
         return None, None
 
 def _print(text): #pragma NO COVERAGE
-    print text
+    print(text)
 
 def main(): #pragma NO COVERAGE
     try:
         indexer = Indexer(sys.argv[1:])
-    except ValueError, e:
-        print str(e)
+    except ValueError as e:
+        print(str(e))
         sys.exit(1)
     indexer()
 
