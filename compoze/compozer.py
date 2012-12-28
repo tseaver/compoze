@@ -216,11 +216,11 @@ class Compozer:
                     if cp.has_option('global', 'index-url'):
                         text = cp.get('global', 'index-url')
                         urls = [x.strip() for x in text.splitlines()]
-                        op.index_urls = filter(None, urls)
+                        op.index_urls = list(filter(None, urls))
                     if cp.has_option('global', 'find-links'):
                         text = cp.get('global', 'find-links')
                         urls = [x.strip() for x in text.splitlines()]
-                        op.find_links = filter(None, urls)
+                        op.find_links = list(filter(None, urls))
                     if cp.has_option('global', 'fetch-site-packages'):
                         op.fetch_site_packages = cp.getboolean('global',
                                                        'fetch-site-packages')
