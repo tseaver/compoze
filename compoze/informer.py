@@ -168,8 +168,9 @@ class Informer:
                     skipped[dist] = 1
             else:
                 if (dist in rqmt and
-                     (dist.precedence <= pkg_resources.SOURCE_DIST
-                                    or not self.options.source_only)):
+                     (dist.precedence is None or
+                      dist.precedence <= pkg_resources.SOURCE_DIST or
+                      not self.options.source_only)):
                     yield dist
 
                     if self.options.only_best:
