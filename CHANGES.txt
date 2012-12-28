@@ -4,6 +4,8 @@ compoze Changelog
 Unreleased
 ----------
 
+- Added testing for supported Python versions under ``tox``.
+
 - Added logic to handle archives (e.g., Twisted's) which contain multiple
   'setup.py' files.  Thanks to Travis Jensen for the patch.
 
