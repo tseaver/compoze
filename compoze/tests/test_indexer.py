@@ -342,7 +342,7 @@ class IndexerTests(unittest.TestCase):
         self.assertEqual(tested._extractNameVersion(non_archive.name),
                          (None, None))
 
-    def test__extractNameVersion_archive_no_egg_info_or_setup(self):
+    def test__extractNameVersion_empty_archive(self):
         import tarfile
         import tempfile
         tested = self._makeOne()
