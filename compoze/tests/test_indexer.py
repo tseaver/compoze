@@ -584,8 +584,8 @@ class IndexerTests(unittest.TestCase):
                          (None, None))
 
 _DUMMY_SETUP = b"""\
-print 'testpackage'
-print '3.14'
+print('testpackage')
+print('3.14')
 """
 
 _ERRORING_SETUP = b"""\
