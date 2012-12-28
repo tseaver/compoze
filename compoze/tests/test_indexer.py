@@ -343,11 +343,35 @@ class IndexerTests(unittest.TestCase):
                          (None, None))
 
     def test__extractNameVersion_empty_archive(self):
+        import sys
         import tarfile
         import tempfile
         tested = self._makeOne()
         tfile = tempfile.NamedTemporaryFile(suffix='.tgz')
-        archive = tarfile.TarFile(fileobj=tfile)
+        if sys.version_info[:2] < (2, 7): # 2.6 can't open empty in write mode
+            archive = tarfile.TarFile(fileobj=tfile)
+        else:                             # 2.7 can't open empty in read mode
+            archive = tarfile.TarFile(fileobj=tfile, mode='w')
+        archive.close()
+        tfile.flush()
+        self.assertEqual(tested._extractNameVersion(tfile.name),
+                         (None, None))
+
+    def test__extractNameVersion_archive_no_egg_info_or_setup(self):
+        import StringIO
+        import tarfile
+        import tempfile
+        tested = self._makeOne()
+        tfile = tempfile.NamedTemporaryFile(suffix='.tgz')
+        archive = tarfile.TarFile(fileobj=tfile, mode='w')
+        buffer = StringIO.StringIO()
+        buffer.writelines(['README\n',
+                          ])
+        size = buffer.tell()
+        buffer.seek(0)
+        info = tarfile.TarInfo('README.txt')
+        info.size = size
+        archive.addfile(info, buffer)
         archive.close()
         tfile.flush()
         self.assertEqual(tested._extractNameVersion(tfile.name),
