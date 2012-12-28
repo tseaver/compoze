@@ -1,9 +1,9 @@
 import optparse
 import pkg_resources
 import sys
-import StringIO
 
 from compoze.index import CompozePackageIndex
+from compoze._compat import StringIO
 
 class Informer:
     index_factory = CompozePackageIndex # allow shimming for testing
@@ -105,7 +105,7 @@ class Informer:
         """ Show available distributions for each index.
         """
         if len(self.requirements) == 0:
-            msg = StringIO.StringIO()
+            msg = StringIO()
             msg.write('show: Either specify requirements, or else'
                                     '--fetch-site-packages .\n\n')
             msg.write(self.usage)

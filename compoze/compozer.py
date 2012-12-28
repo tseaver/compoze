@@ -3,11 +3,12 @@
 Register sub-commands by querying :mod:`setuptools` entry points for the
 group ``compoze_commands``.
 """
-from ConfigParser import ConfigParser
 import optparse
 import pkg_resources
 import textwrap
 import sys
+
+from compoze._compat import ConfigParser
 
 class InvalidCommandLine(ValueError):
     pass

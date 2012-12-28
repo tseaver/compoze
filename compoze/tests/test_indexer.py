@@ -302,12 +302,12 @@ class IndexerTests(unittest.TestCase):
 
     def test_make_index_w_distribution(self):
         import os
-        import StringIO
         import tarfile
+        from compoze._compat import StringIO
         tmpdir = self._makeTempdir()
         filename = os.path.join(tmpdir, 'testpackage-3.14.tar.gz')
         archive = tarfile.TarFile(filename, mode='w')
-        buffer = StringIO.StringIO()
+        buffer = StringIO()
         buffer.writelines(['Metadata-Version: 1.0\n',
                            'Name: testpackage\n',
                            'Version: 3.14\n',
@@ -358,13 +358,13 @@ class IndexerTests(unittest.TestCase):
                          (None, None))
 
     def test__extractNameVersion_archive_no_egg_info_or_setup(self):
-        import StringIO
         import tarfile
         import tempfile
+        from compoze._compat import StringIO
         tested = self._makeOne()
         tfile = tempfile.NamedTemporaryFile(suffix='.tgz')
         archive = tarfile.TarFile(fileobj=tfile, mode='w')
-        buffer = StringIO.StringIO()
+        buffer = StringIO()
         buffer.writelines(['README\n',
                           ])
         size = buffer.tell()
@@ -378,13 +378,13 @@ class IndexerTests(unittest.TestCase):
                          (None, None))
 
     def test__extractNameVersion_archive_w_pkg_info(self):
-        import StringIO
         import tarfile
         import tempfile
+        from compoze._compat import StringIO
         tested = self._makeOne()
         tfile = tempfile.NamedTemporaryFile(suffix='.tgz')
         archive = tarfile.TarFile(fileobj=tfile, mode='w')
-        buffer = StringIO.StringIO()
+        buffer = StringIO()
         buffer.writelines(['Metadata-Version: 1.0\n',
                            'Name: testpackage\n',
                            'Version: 3.14\n',
@@ -400,13 +400,13 @@ class IndexerTests(unittest.TestCase):
                          ('testpackage', '3.14'))
 
     def test__extractNameVersion_archive_w_pkg_info_version_first(self):
-        import StringIO
         import tarfile
         import tempfile
+        from compoze._compat import StringIO
         tested = self._makeOne()
         tfile = tempfile.NamedTemporaryFile(suffix='.tgz')
         archive = tarfile.TarFile(fileobj=tfile, mode='w')
-        buffer = StringIO.StringIO()
+        buffer = StringIO()
         buffer.writelines(['Metadata-Version: 1.0\n',
                            'Version: 3.14\n',
                            'Name: testpackage\n',
@@ -422,9 +422,9 @@ class IndexerTests(unittest.TestCase):
                          ('testpackage', '3.14'))
 
     def test__extractNameVersion_archive_w_nested_setup(self):
-        import StringIO
         import tarfile
         import tempfile
+        from compoze._compat import StringIO
         tested = self._makeOne()
         tfile = tempfile.NamedTemporaryFile(suffix='.tgz')
         archive = tarfile.TarFile(fileobj=tfile, mode='w')
@@ -432,7 +432,7 @@ class IndexerTests(unittest.TestCase):
         dinfo.type = tarfile.DIRTYPE
         dinfo.mode = 0o777
         archive.addfile(dinfo)
-        buffer = StringIO.StringIO()
+        buffer = StringIO()
         buffer.write(_DUMMY_SETUP)
         size = buffer.tell()
         buffer.seek(0)
@@ -446,9 +446,9 @@ class IndexerTests(unittest.TestCase):
 
 
     def test__extractNameVersion_archive_w_mulitiple_nested_setups(self):
-        import StringIO
         import tarfile
         import tempfile
+        from compoze._compat import StringIO
         tested = self._makeOne()
         tfile = tempfile.NamedTemporaryFile(suffix='.tgz')
         archive = tarfile.TarFile(fileobj=tfile, mode='w')
@@ -458,7 +458,7 @@ class IndexerTests(unittest.TestCase):
             dinfo.mode = 0o777
             archive.addfile(dinfo)
         def add_setup(path):
-            buffer = StringIO.StringIO()
+            buffer = StringIO()
             buffer.write(_DUMMY_SETUP.replace('testpackage', path))
             size = buffer.tell()
             buffer.seek(0)
@@ -477,10 +477,10 @@ class IndexerTests(unittest.TestCase):
 
 
 
-    def test__extractNameVersion_archive_w_mulitiple_nested_setup_and_root_setup(self):
-        import StringIO
+    def test__extractNameVersion_archive_w_muli_nested_setup_root_setup(self):
         import tarfile
         import tempfile
+        from compoze._compat import StringIO
         tested = self._makeOne()
         tfile = tempfile.NamedTemporaryFile(suffix='.tgz')
         archive = tarfile.TarFile(fileobj=tfile, mode='w')
@@ -490,7 +490,7 @@ class IndexerTests(unittest.TestCase):
             dinfo.mode = 0o777
             archive.addfile(dinfo)
         def add_setup(path):
-            buffer = StringIO.StringIO()
+            buffer = StringIO()
             buffer.write(_DUMMY_SETUP.replace('testpackage', path))
             size = buffer.tell()
             buffer.seek(0)
@@ -510,9 +510,9 @@ class IndexerTests(unittest.TestCase):
 
 
     def test__extractNameVersion_archive_w_setup_at_root(self):
-        import StringIO
         import tarfile
         import tempfile
+        from compoze._compat import StringIO
         tested = self._makeOne()
         tfile = tempfile.NamedTemporaryFile(suffix='.tgz')
         archive = tarfile.TarFile(fileobj=tfile, mode='w')
@@ -520,7 +520,7 @@ class IndexerTests(unittest.TestCase):
         dinfo.type = tarfile.DIRTYPE
         dinfo.mode = 0o777
         archive.addfile(dinfo)
-        buffer = StringIO.StringIO()
+        buffer = StringIO()
         buffer.write(_DUMMY_SETUP)
         size = buffer.tell()
         buffer.seek(0)
@@ -533,9 +533,9 @@ class IndexerTests(unittest.TestCase):
                          ('testpackage', '3.14'))
 
     def test__extractNameVersion_archive_w_erroring_setup(self):
-        import StringIO
         import tarfile
         import tempfile
+        from compoze._compat import StringIO
         tested = self._makeOne()
         tfile = tempfile.NamedTemporaryFile(suffix='.tgz')
         archive = tarfile.TarFile(fileobj=tfile, mode='w')
@@ -543,7 +543,7 @@ class IndexerTests(unittest.TestCase):
         dinfo.type = tarfile.DIRTYPE
         dinfo.mode = 0o777
         archive.addfile(dinfo)
-        buffer = StringIO.StringIO()
+        buffer = StringIO()
         buffer.write(_ERRORING_SETUP)
         size = buffer.tell()
         buffer.seek(0)
@@ -556,9 +556,9 @@ class IndexerTests(unittest.TestCase):
                          (None, None))
 
     def test__extractNameVersion_archive_w_noout_setup(self):
-        import StringIO
         import tarfile
         import tempfile
+        from compoze._compat import StringIO
         tested = self._makeOne()
         tfile = tempfile.NamedTemporaryFile(suffix='.tgz')
         archive = tarfile.TarFile(fileobj=tfile, mode='w')
@@ -566,7 +566,7 @@ class IndexerTests(unittest.TestCase):
         dinfo.type = tarfile.DIRTYPE
         dinfo.mode = 0o777
         archive.addfile(dinfo)
-        buffer = StringIO.StringIO()
+        buffer = StringIO()
         buffer.write(_NOOUT_SETUP)
         size = buffer.tell()
         buffer.seek(0)

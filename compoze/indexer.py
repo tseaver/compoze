@@ -7,7 +7,8 @@ import sys
 import tarfile
 import tempfile
 import zipfile
-import StringIO
+
+from compoze._compat import StringIO
 
 
 class TarArchive:
@@ -147,7 +148,7 @@ class Indexer:
             path = self.path
 
         if not os.path.isdir(path):
-            msg = StringIO.StringIO()
+            msg = StringIO()
             msg.write('Not a directory: %s\n\n' % path)
             msg.write(self.usage)
             raise ValueError(msg.getvalue())

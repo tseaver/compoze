@@ -1,8 +1,9 @@
 import optparse
 import os
 import shutil
-import StringIO
 import sys
+
+from compoze._compat import StringIO
 
 ARCHIVE_EXTS = ('tar.gz', 'tgz', 'zip', 'tar.bz2', 'tbz')
 
@@ -79,7 +80,7 @@ class Pooler(object):
         Ignore any archives which are already symlinks.
         """
         if self.pool_dir is None:
-            msg = StringIO.StringIO()
+            msg = StringIO()
             msg.write('No pool_dir!\n\n')
             msg.write(self.usage)
             raise ValueError(msg.getvalue())

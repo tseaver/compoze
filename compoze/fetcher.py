@@ -4,9 +4,10 @@ import pkg_resources
 import shutil
 import sys
 import tempfile
-import StringIO
+
 
 from compoze.index import CompozePackageIndex
+from compoze._compat import StringIO
 
 
 class Fetcher:
@@ -130,7 +131,7 @@ class Fetcher:
         # XXX ignore same-name problem for now
 
         if len(self.requirements) == 0:
-            msg = StringIO.StringIO()
+            msg = StringIO()
             msg.write('fetch: Either specify requirements, or else '
                                     '--fetch-site-packages .\n\n')
             msg.write(self.usage)
@@ -140,7 +141,7 @@ class Fetcher:
             os.makedirs(self.path)
 
         if not os.path.isdir(self.path):
-            msg = StringIO.StringIO()
+            msg = StringIO()
             msg.write('Not a directory: %s\n\n' % self.path)
             msg.write(self.usage)
             raise ValueError(msg.getvalue())
