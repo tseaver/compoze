@@ -54,6 +54,22 @@ class _ArchiveTests:
                     'This is the second line of text file 2.\n')
         self.assertEqual(open(path).read(), expected)
 
+    def test_extractall(self):
+        import os
+        archive = self._makeOne()
+        target = self._makeTempdir()
+        archive.extractall(target)
+        name = self._fixtureFiles()[0]['name']
+        path = os.path.join(target, name)
+        expected = ('This is the first line of text file 1.\n'
+                    'This is the second line of text file 1.\n')
+        self.assertEqual(open(path).read(), expected)
+        name = self._fixtureFiles()[1]['name']
+        path = os.path.join(target, name)
+        expected = ('This is the first line of text file 2.\n'
+                    'This is the second line of text file 2.\n')
+        self.assertEqual(open(path).read(), expected)
+
     def test_close_disables_other_methods(self):
         archive = self._makeOne()
         archive.close()
@@ -403,6 +419,71 @@ class IndexerTests(unittest.TestCase):
         tfile.flush()
         self.assertEqual(tested._extractNameVersion(tfile.name),
                          ('testpackage', '3.14'))
+
+
+    def test__extractNameVersion_archive_w_mulitiple_nested_setups(self):
+        import StringIO
+        import tarfile
+        import tempfile
+        tested = self._makeOne()
+        tfile = tempfile.NamedTemporaryFile(suffix='.tgz')
+        archive = tarfile.TarFile(fileobj=tfile, mode='w')
+        def add_tar_dir(path):
+            dinfo = tarfile.TarInfo(path)
+            dinfo.type = tarfile.DIRTYPE
+            dinfo.mode = 0777
+            archive.addfile(dinfo)
+        def add_setup(path):
+            buffer = StringIO.StringIO()
+            buffer.write(_DUMMY_SETUP.replace('testpackage', path))
+            size = buffer.tell()
+            buffer.seek(0)
+            finfo = tarfile.TarInfo('%s/setup.py' % path)
+            finfo.size = size
+            archive.addfile(finfo, buffer)
+        add_tar_dir('testpackage')
+        add_tar_dir('testpackage/dir1')
+        add_setup('testpackage/dir1')
+        add_tar_dir('testpackage/dir2')
+        add_setup('testpackage/dir2')
+        archive.close()
+        tfile.flush()
+        self.assertEqual(tested._extractNameVersion(tfile.name),
+                         ('testpackage/dir1', '3.14'))
+
+
+
+    def test__extractNameVersion_archive_w_mulitiple_nested_setup_and_root_setup(self):
+        import StringIO
+        import tarfile
+        import tempfile
+        tested = self._makeOne()
+        tfile = tempfile.NamedTemporaryFile(suffix='.tgz')
+        archive = tarfile.TarFile(fileobj=tfile, mode='w')
+        def add_tar_dir(path):
+            dinfo = tarfile.TarInfo(path)
+            dinfo.type = tarfile.DIRTYPE
+            dinfo.mode = 0777
+            archive.addfile(dinfo)
+        def add_setup(path):
+            buffer = StringIO.StringIO()
+            buffer.write(_DUMMY_SETUP.replace('testpackage', path))
+            size = buffer.tell()
+            buffer.seek(0)
+            finfo = tarfile.TarInfo('%s/setup.py' % path)
+            finfo.size = size
+            archive.addfile(finfo, buffer)
+        add_tar_dir('testpackage')
+        add_setup('testpackage')
+        add_tar_dir('testpackage/dir1')
+        add_setup('testpackage/dir1')
+        add_tar_dir('testpackage/dir2')
+        add_setup('testpackage/dir2')
+        archive.close()
+        tfile.flush()
+        self.assertEqual(tested._extractNameVersion(tfile.name),
+                         ('testpackage', '3.14'))
+
 
     def test__extractNameVersion_archive_w_setup_at_root(self):
         import StringIO

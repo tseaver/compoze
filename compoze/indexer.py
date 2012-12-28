@@ -17,12 +17,15 @@ class TarArchive:
 
     def names(self):
         return self.tar.getnames()
-        
+
     def lines(self, name):
         return [ x.rstrip() for x in self.tar.extractfile(name).readlines() ]
 
     def extract(self, name, tempdir):
         return self.tar.extract(name, tempdir)
+
+    def extractall(self, tempdir):
+        return self.tar.extractall(tempdir)
 
     def close(self):
         self.tar.close()
@@ -37,7 +40,7 @@ class ZipArchive:
         if self.closed:
             raise IOError('closed')
         return self.zipf.namelist()
-        
+
     def lines(self, name):
         if self.closed:
             raise IOError('closed')
@@ -57,7 +60,10 @@ class ZipArchive:
             f = open(fn, 'wb')
             f.write(data)
             f.close()
-            
+
+    def extractall(self, tempdir):
+        return self.zipf.extractall(tempdir)
+
     def close(self):
         self.zipf.close()
         self.closed = True
@@ -78,7 +84,7 @@ def _getArchiver(filename):
 class Indexer:
 
     def __init__(self, global_options, *argv, **kw):
-    
+
         argv = list(argv)
         parser = optparse.OptionParser(
             usage="%prog [OPTIONS] app_egg_name [other_egg_name]*")
@@ -232,22 +238,30 @@ class Indexer:
         else:
             try:
                 names = archive.names()
-                setup = None
-                prefix = ''
+                setup, a_setup = None, None
+                archive_dir = names[0].split('/', 1)[0]
+                the_setup = '%s/setup.py' %  archive_dir
                 for name in names:
-                    if name == 'setup.py':
+                    if name == the_setup:
+                        prefix = archive_dir
+                        setup = the_setup
+                        break
+                    elif name == 'setup.py':
+                        prefix = ''
                         setup = name
                         break
                     elif name.endswith('/setup.py'):
-                        setup = name
-                        prefix = os.path.dirname(setup)
-                        break
+                        if not a_setup:
+                            prefix = os.path.dirname(name)
+                            a_setup = name
+                else:
+                    if a_setup:
+                        setup = a_setup
 
                 if setup is not None:
-                    self.blather('Running setup: %s' % setup)
                     tmpdir = tempfile.mkdtemp()
                     try:
-                        archive.extract(setup, tmpdir)
+                        archive.extractall(tmpdir)
                         command = ('cd %s/%s && %s setup.py --name --version'
                                     % (tmpdir, prefix, sys.executable))
                         popen = subprocess.Popen(command,
