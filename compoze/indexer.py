@@ -172,10 +172,9 @@ class Indexer:
             if project is not None:
                 projects.setdefault(project, []).append((revision, candidate))
 
-        items = projects.items()
+        items = sorted(projects.items())
         if len(items) == 0:
             raise ValueError('No distributions in %s' % path)
-        items.sort()
 
         os.makedirs(index_dir)
         index_html = os.path.join(index_dir, 'index.html')
