@@ -4,7 +4,7 @@ compoze Changelog
 1.0b1 (2012-12-28)
 ------------------
 
-- Added wupport for building docs under ``tox``, including testing any
+- Added support for building docs under ``tox``, including testing any
   doctest snippets.
 
 - Added support for Python 3.2 and 3.3, including testing them under ``tox``.
