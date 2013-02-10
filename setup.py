@@ -71,5 +71,6 @@ setup(name='compoze',
       },
       extras_require = {
         'testing': ['nose', 'coverage'],
+        'docs': ['Sphinx'],
       },
 )

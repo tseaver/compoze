@@ -4,6 +4,9 @@ compoze Changelog
 1.0 (unreleased)
 ----------------
 
+- Added ``setup.py docs`` alias (installs 'Sphinx' after running
+  ``setup.py develop``).
+
 - Updated Trove classifiers.
 
 1.0b1 (2012-12-28)
@@ -23,8 +26,8 @@ compoze Changelog
 - Added logic to handle archives (e.g., Twisted's) which contain multiple
   'setup.py' files.  Thanks to Travis Jensen for the patch.
 
-- Added 'setup.py dev' alias (installs 'nose' and 'coverage' after running
-  'setup.py develop').
+- Added ``setup.py dev`` alias (installs 'nose' and 'coverage' after running
+  ``setup.py develop``).
 
 compoze 0.4.1.1 (2012-04-19)
 ----------------------------
