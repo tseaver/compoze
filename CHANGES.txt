@@ -1,7 +1,7 @@
 compoze Changelog
 =================
 
-1.0 (unreleased)
+1.0 (2012-02-10)
 ----------------
 
 - Added ``setup.py docs`` alias (installs 'Sphinx' after running
